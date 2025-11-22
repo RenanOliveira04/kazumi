@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: incluapp_db
+    environment:
+      POSTGRES_USER: incluapp_user
+      POSTGRES_PASSWORD: incluapp_password
+      POSTGRES_DB: incluapp
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - incluapp_network
+
+  api:
+    build: .
+    container_name: incluapp_api
+    environment:
+      DATABASE_URL: postgresql://incluapp_user:incluapp_password@db:5432/incluapp
+      SECRET_KEY: your-production-secret-key-change-this
+      CORS_ORIGINS: http://localhost:3000,http://localhost:8000
+      ENVIRONMENT: production
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - incluapp_network
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+volumes:
+  postgres_data:
+
+networks:
+  incluapp_network:
+    driver: bridge
+
