@@ -1,13 +1,18 @@
-
+version: '3.8'
 
 services:
+  # ==========================================
+  # PostgreSQL Database
+  # ==========================================
   db:
-    image: postgres:15
+    image: postgres:15-alpine
     container_name: kazumi_db
+    platform: linux/amd64
     environment:
       POSTGRES_USER: kazumi_user
       POSTGRES_PASSWORD: kazumi_password
       POSTGRES_DB: kazumi
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -15,10 +20,27 @@ services:
     networks:
       - kazumi_network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kazumi_user -d kazumi"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
+  # ==========================================
+  # FastAPI Backend
+  # ==========================================
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: kazumi_api
+    platform: linux/amd64
     env_file:
       - .env
     environment:
@@ -34,17 +56,26 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - kazumi_network
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-
+  # ==========================================
+  # React Frontend + Nginx
+  # ==========================================
   frontend:
     build:
       context: ./kazumi-front
       dockerfile: Dockerfile
     container_name: kazumi_frontend
+    platform: linux/amd64
     ports:
       - "8080:80"
     depends_on:
@@ -52,10 +83,22 @@ services:
     networks:
       - kazumi_network
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
+# ==========================================
+# Volumes
+# ==========================================
 volumes:
   postgres_data:
+    driver: local
 
+# ==========================================
+# Networks
+# ==========================================
 networks:
   kazumi_network:
     driver: bridge
