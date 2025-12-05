@@ -1,6 +1,6 @@
-# 🚀 Início Rápido - IncluApp Backend
+# 🚀 Início Rápido - Kazumi Backend
 
-Este guia irá te ajudar a colocar o IncluApp funcionando em poucos minutos!
+Este guia irá te ajudar a colocar o Kazumi funcionando em poucos minutos!
 
 ## ⚡ Instalação Rápida (5 minutos)
 

@@ -2,8 +2,19 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.routers import (
-    auth, users, pei, mensagens, notificacoes, eventos, atividades,
-    disciplinas, turmas, avaliacoes, metricas, relatorios
+    auth,
+    users,
+    pei,
+    mensagens,
+    notificacoes,
+    eventos,
+    atividades,
+    disciplinas,
+    turmas,
+    avaliacoes,
+    metricas,
+    relatorios,
+    upload,
 )
 
 app = FastAPI(
@@ -11,7 +22,7 @@ app = FastAPI(
     description="API do IncluApp - Sistema de comunicação escola-família com foco em inclusão educacional",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
 
 # Configuração CORS
@@ -36,20 +47,16 @@ app.include_router(turmas.router)
 app.include_router(avaliacoes.router)
 app.include_router(metricas.router)
 app.include_router(relatorios.router)
+app.include_router(upload.router)
 
 
 @app.get("/")
 def read_root():
     """Endpoint raiz da API"""
-    return {
-        "message": "Bem-vindo ao IncluApp API",
-        "version": "1.0.0",
-        "docs": "/docs"
-    }
+    return {"message": "Bem-vindo ao IncluApp API", "version": "1.0.0", "docs": "/docs"}
 
 
 @app.get("/health")
 def health_check():
     """Endpoint de health check"""
     return {"status": "healthy"}
-

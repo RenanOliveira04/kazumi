@@ -1,0 +1,251 @@
+﻿kazumi_api  | INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+kazumi_api  | INFO  [alembic.runtime.migration] Will assume transactional DDL.
+kazumi_api  | INFO:     Started server process [8]
+kazumi_api  | INFO:     Waiting for application startup.
+kazumi_api  | INFO:     Application startup complete.
+kazumi_api  | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+kazumi_api  | INFO:     172.18.0.1:44238 - "OPTIONS /api/auth/register HTTP/1.1" 200 OK
+kazumi_api  | INFO:     172.18.0.1:44238 - "POST /api/auth/register HTTP/1.1" 500 Internal Server Error
+kazumi_api  | ERROR:    Exception in ASGI application
+kazumi_api  | Traceback (most recent call last):
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1969, in _exec_single_context
+kazumi_api  |     self.dialect.do_execute(
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 922, in do_execute
+kazumi_api  |     cursor.execute(statement, parameters)
+kazumi_api  | psycopg2.errors.UndefinedTable: relation "users" does not exist
+kazumi_api  | LINE 2: FROM users 
+kazumi_api  |              ^
+kazumi_api  | 
+kazumi_api  | 
+kazumi_api  | The above exception was the direct cause of the following exception:
+kazumi_api  | 
+kazumi_api  | Traceback (most recent call last):
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 409, in run_asgi
+kazumi_api  |     result = await app(  # type: ignore[func-returns-value]
+kazumi_api  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+kazumi_api  |     return await self.app(scope, receive, send)
+kazumi_api  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1139, in __call__
+kazumi_api  |     await super().__call__(scope, receive, send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 107, in __call__
+kazumi_api  |     await self.middleware_stack(scope, receive, send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+kazumi_api  |     raise exc
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+kazumi_api  |     await self.app(scope, receive, _send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 93, in __call__
+kazumi_api  |     await self.simple_response(scope, receive, send, request_headers=headers)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+kazumi_api  |     await self.app(scope, receive, send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+kazumi_api  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+kazumi_api  |     raise exc
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+kazumi_api  |     await app(scope, receive, sender)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+kazumi_api  |     await self.app(scope, receive, send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 716, in __call__
+kazumi_api  |     await self.middleware_stack(scope, receive, send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 736, in app
+kazumi_api  |     await route.handle(scope, receive, send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 290, in handle
+kazumi_api  |     await self.app(scope, receive, send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 119, in app
+kazumi_api  |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+kazumi_api  |     raise exc
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+kazumi_api  |     await app(scope, receive, sender)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 105, in app
+kazumi_api  |     response = await f(request)
+kazumi_api  |                ^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 385, in app
+kazumi_api  |     raw_response = await run_endpoint_function(
+kazumi_api  |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 286, in run_endpoint_function
+kazumi_api  |     return await run_in_threadpool(dependant.call, **values)
+kazumi_api  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/concurrency.py", line 32, in run_in_threadpool
+kazumi_api  |     return await anyio.to_thread.run_sync(func)
+kazumi_api  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/anyio/to_thread.py", line 61, in run_sync
+kazumi_api  |     return await get_async_backend().run_sync_in_worker_thread(
+kazumi_api  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 2525, in run_sync_in_worker_thread
+kazumi_api  |     return await future
+kazumi_api  |            ^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+kazumi_api  |     result = context.run(func, *args)
+kazumi_api  |              ^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/app/app/routers/auth.py", line 18, in register
+kazumi_api  |     existing_user = db.query(User).filter(User.email == user_data.email).first()
+kazumi_api  |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2748, in first
+kazumi_api  |     return self.limit(1)._iter().first()  # type: ignore
+kazumi_api  |            ^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2847, in _iter
+kazumi_api  |     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+kazumi_api  |                                                   ^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2308, in execute
+kazumi_api  |     return self._execute_internal(
+kazumi_api  |            ^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2190, in _execute_internal
+kazumi_api  |     result: Result[Any] = compile_state_cls.orm_execute_statement(
+kazumi_api  |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 293, in orm_execute_statement
+kazumi_api  |     result = conn.execute(
+kazumi_api  |              ^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1416, in execute
+kazumi_api  |     return meth(
+kazumi_api  |            ^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 516, in _execute_on_connection
+kazumi_api  |     return connection._execute_clauseelement(
+kazumi_api  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1639, in _execute_clauseelement
+kazumi_api  |     ret = self._execute_context(
+kazumi_api  |           ^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1848, in _execute_context
+kazumi_api  |     return self._exec_single_context(
+kazumi_api  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1988, in _exec_single_context
+kazumi_api  |     self._handle_dbapi_exception(
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2343, in _handle_dbapi_exception
+kazumi_api  |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1969, in _exec_single_context
+kazumi_api  |     self.dialect.do_execute(
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 922, in do_execute
+kazumi_api  |     cursor.execute(statement, parameters)
+kazumi_api  | sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedTable) relation "users" does not exist
+kazumi_api  | LINE 2: FROM users 
+kazumi_api  |              ^
+kazumi_api  | 
+kazumi_api  | [SQL: SELECT users.id AS users_id, users.email AS users_email, users.senha_hash AS users_senha_hash, users.nome_completo AS users_nome_completo, users.telefone AS users_telefone, users.tipo_usuario AS users_tipo_usuario, users.ativo AS users_ativo, users.criado_em AS users_criado_em, users.atualizado_em AS users_atualizado_em, users.deletado_em AS users_deletado_em 
+kazumi_api  | FROM users 
+kazumi_api  | WHERE users.email = %(email_1)s 
+kazumi_api  |  LIMIT %(param_1)s]
+kazumi_api  | [parameters: {'email_1': 'rlsorenan@gmail.com', 'param_1': 1}]
+kazumi_api  | (Background on this error at: https://sqlalche.me/e/20/f405)
+kazumi_api  | INFO:     172.18.0.1:57834 - "POST /api/auth/register HTTP/1.1" 500 Internal Server Error
+kazumi_api  | ERROR:    Exception in ASGI application
+kazumi_api  | Traceback (most recent call last):
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1969, in _exec_single_context
+kazumi_api  |     self.dialect.do_execute(
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 922, in do_execute
+kazumi_api  |     cursor.execute(statement, parameters)
+kazumi_api  | psycopg2.errors.UndefinedTable: relation "users" does not exist
+kazumi_api  | LINE 2: FROM users 
+kazumi_api  |              ^
+kazumi_api  | 
+kazumi_api  | 
+kazumi_api  | The above exception was the direct cause of the following exception:
+kazumi_api  | 
+kazumi_api  | Traceback (most recent call last):
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 409, in run_asgi
+kazumi_api  |     result = await app(  # type: ignore[func-returns-value]
+kazumi_api  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+kazumi_api  |     return await self.app(scope, receive, send)
+kazumi_api  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1139, in __call__
+kazumi_api  |     await super().__call__(scope, receive, send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 107, in __call__
+kazumi_api  |     await self.middleware_stack(scope, receive, send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+kazumi_api  |     raise exc
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+kazumi_api  |     await self.app(scope, receive, _send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 93, in __call__
+kazumi_api  |     await self.simple_response(scope, receive, send, request_headers=headers)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+kazumi_api  |     await self.app(scope, receive, send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+kazumi_api  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+kazumi_api  |     raise exc
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+kazumi_api  |     await app(scope, receive, sender)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+kazumi_api  |     await self.app(scope, receive, send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 716, in __call__
+kazumi_api  |     await self.middleware_stack(scope, receive, send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 736, in app
+kazumi_api  |     await route.handle(scope, receive, send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 290, in handle
+kazumi_api  |     await self.app(scope, receive, send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 119, in app
+kazumi_api  |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+kazumi_api  |     raise exc
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+kazumi_api  |     await app(scope, receive, sender)
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 105, in app
+kazumi_api  |     response = await f(request)
+kazumi_api  |                ^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 385, in app
+kazumi_api  |     raw_response = await run_endpoint_function(
+kazumi_api  |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 286, in run_endpoint_function
+kazumi_api  |     return await run_in_threadpool(dependant.call, **values)
+kazumi_api  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/starlette/concurrency.py", line 32, in run_in_threadpool
+kazumi_api  |     return await anyio.to_thread.run_sync(func)
+kazumi_api  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/anyio/to_thread.py", line 61, in run_sync
+kazumi_api  |     return await get_async_backend().run_sync_in_worker_thread(
+kazumi_api  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 2525, in run_sync_in_worker_thread
+kazumi_api  |     return await future
+kazumi_api  |            ^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+kazumi_api  |     result = context.run(func, *args)
+kazumi_api  |              ^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/app/app/routers/auth.py", line 18, in register
+kazumi_api  |     existing_user = db.query(User).filter(User.email == user_data.email).first()
+kazumi_api  |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2748, in first
+kazumi_api  |     return self.limit(1)._iter().first()  # type: ignore
+kazumi_api  |            ^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2847, in _iter
+kazumi_api  |     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+kazumi_api  |                                                   ^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2308, in execute
+kazumi_api  |     return self._execute_internal(
+kazumi_api  |            ^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2190, in _execute_internal
+kazumi_api  |     result: Result[Any] = compile_state_cls.orm_execute_statement(
+kazumi_api  |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 293, in orm_execute_statement
+kazumi_api  |     result = conn.execute(
+kazumi_api  |              ^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1416, in execute
+kazumi_api  |     return meth(
+kazumi_api  |            ^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 516, in _execute_on_connection
+kazumi_api  |     return connection._execute_clauseelement(
+kazumi_api  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1639, in _execute_clauseelement
+kazumi_api  |     ret = self._execute_context(
+kazumi_api  |           ^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1848, in _execute_context
+kazumi_api  |     return self._exec_single_context(
+kazumi_api  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1988, in _exec_single_context
+kazumi_api  |     self._handle_dbapi_exception(
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2343, in _handle_dbapi_exception
+kazumi_api  |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1969, in _exec_single_context
+kazumi_api  |     self.dialect.do_execute(
+kazumi_api  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 922, in do_execute
+kazumi_api  |     cursor.execute(statement, parameters)
+kazumi_api  | sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedTable) relation "users" does not exist
+kazumi_api  | LINE 2: FROM users 
+kazumi_api  |              ^
+kazumi_api  | 
+kazumi_api  | [SQL: SELECT users.id AS users_id, users.email AS users_email, users.senha_hash AS users_senha_hash, users.nome_completo AS users_nome_completo, users.telefone AS users_telefone, users.tipo_usuario AS users_tipo_usuario, users.ativo AS users_ativo, users.criado_em AS users_criado_em, users.atualizado_em AS users_atualizado_em, users.deletado_em AS users_deletado_em 
+kazumi_api  | FROM users 
+kazumi_api  | WHERE users.email = %(email_1)s 
+kazumi_api  |  LIMIT %(param_1)s]
+kazumi_api  | [parameters: {'email_1': 'rlsorenan@gmail.com', 'param_1': 1}]
+kazumi_api  | (Background on this error at: https://sqlalche.me/e/20/f405)

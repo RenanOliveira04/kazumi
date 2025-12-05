@@ -1,0 +1,6 @@
+﻿kazumi_api  | INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+kazumi_api  | INFO  [alembic.runtime.migration] Will assume transactional DDL.
+kazumi_api  | INFO:     Started server process [8]
+kazumi_api  | INFO:     Waiting for application startup.
+kazumi_api  | INFO:     Application startup complete.
+kazumi_api  | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
