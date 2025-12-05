@@ -6,9 +6,6 @@ FROM node:18-alpine as build
 # Definir diretório de trabalho
 WORKDIR /app
 
-# Instalar npm (já vem com node, mas garantindo versão atualizada)
-RUN npm install -g npm@latest
-
 # Copiar arquivos de dependências primeiro (cache layer)
 COPY package.json package-lock.json ./
 
