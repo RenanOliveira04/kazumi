@@ -48,11 +48,9 @@ services:
       SECRET_KEY: ${SECRET_KEY:-your-production-secret-key-change-this}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:8000,http://localhost:8080,http://ec2-3-137-179-33.us-east-2.compute.amazonaws.com,http://3.137.179.33}
       ENVIRONMENT: ${ENVIRONMENT:-production}
-      # AWS S3 Configuration
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      AWS_REGION: ${AWS_REGION:-us-east-2}
-      S3_BUCKET_NAME: ${S3_BUCKET_NAME:-kazumi-storage}
+      UPLOAD_DIRECTORY: /app/uploads
+    volumes:
+      - uploads_data:/app/uploads
     ports:
       - "8000:8000"
     depends_on:
@@ -76,6 +74,8 @@ services:
       dockerfile: Dockerfile
     container_name: kazumi_frontend
     platform: linux/amd64
+    volumes:
+      - uploads_data:/usr/share/nginx/html/uploads
     ports:
       - "8080:80"
     depends_on:
@@ -94,6 +94,8 @@ services:
 # ==========================================
 volumes:
   postgres_data:
+    driver: local
+  uploads_data:
     driver: local
 
 # ==========================================

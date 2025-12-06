@@ -36,11 +36,8 @@ class Settings(BaseSettings):
     # Environment
     ENVIRONMENT: str = "development"
 
-    # AWS S3
-    AWS_ACCESS_KEY_ID: str = ""
-    AWS_SECRET_ACCESS_KEY: str = ""
-    AWS_REGION: str = "us-east-2"
-    S3_BUCKET_NAME: str = "kazumi-storage"
+    # Local Storage
+    UPLOAD_DIRECTORY: str = "/app/uploads"
 
     class Config:
         env_file = ".env"

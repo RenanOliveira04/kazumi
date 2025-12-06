@@ -5,7 +5,7 @@ Router para upload de arquivos
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from app.utils.auth import get_current_user
 from app.models.usuario import Usuario
-from app.services.s3_service import s3_service
+from app.services.local_storage_service import local_storage_service
 
 router = APIRouter(prefix="/upload", tags=["Upload"])
 
@@ -39,7 +39,7 @@ async def upload_profile_picture(
         )
 
     # Fazer upload
-    url = await s3_service.upload_profile_picture(file, current_user.id)
+    url = await local_storage_service.upload_profile_picture(file, current_user.id)
 
     return {
         "success": True,
@@ -83,7 +83,7 @@ async def upload_student_document(
         )
 
     # Fazer upload
-    url = await s3_service.upload_student_document(file, student_id)
+    url = await local_storage_service.upload_student_document(file, student_id)
 
     return {"success": True, "url": url, "message": "Documento enviado com sucesso!"}
 
@@ -134,7 +134,7 @@ async def upload_educational_material(
         )
 
     # Fazer upload
-    url = await s3_service.upload_educational_material(file)
+    url = await local_storage_service.upload_educational_material(file)
 
     return {
         "success": True,
