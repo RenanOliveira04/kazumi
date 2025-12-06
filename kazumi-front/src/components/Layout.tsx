@@ -15,6 +15,19 @@ const Layout = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
+      {/* Header com Logo */}
+      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between">
+          <Link to="/" className="flex items-center gap-2">
+            <img 
+              src="/logo.jpg" 
+              alt="Kazumi" 
+              className="h-10 w-auto object-contain"
+            />
+          </Link>
+        </div>
+      </header>
+      
       <main className="flex-1 pb-20">
         <Outlet />
       </main>
