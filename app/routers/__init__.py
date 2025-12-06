@@ -2,6 +2,7 @@
 from app.routers import (
     auth,
     users,
+    alunos,
     pei,
     mensagens,
     notificacoes,
@@ -9,14 +10,17 @@ from app.routers import (
     atividades,
     disciplinas,
     turmas,
+    escolas,
     avaliacoes,
     metricas,
-    relatorios
+    relatorios,
+    upload,
 )
 
 __all__ = [
     "auth",
     "users",
+    "alunos",
     "pei",
     "mensagens",
     "notificacoes",
@@ -24,7 +28,9 @@ __all__ = [
     "atividades",
     "disciplinas",
     "turmas",
+    "escolas",
     "avaliacoes",
     "metricas",
-    "relatorios"
+    "relatorios",
+    "upload",
 ]

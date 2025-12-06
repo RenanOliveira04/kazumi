@@ -103,6 +103,7 @@ export interface IntervencaoPedagogica {
 export const eventosApi = {
   list: () => api.get<Evento[]>('/api/eventos'),
   get: (id: number) => api.get<Evento>(`/api/eventos/${id}`),
+  create: (data: Partial<Evento>) => api.post<Evento>('/api/eventos', data),
 };
 
 export const mensagensApi = {

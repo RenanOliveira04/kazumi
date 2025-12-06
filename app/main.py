@@ -16,6 +16,7 @@ from app.routers import (
     metricas,
     relatorios,
     upload,
+    alunos,
 )
 
 app = FastAPI(
@@ -38,6 +39,7 @@ app.add_middleware(
 # Inclusão dos routers
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(alunos.router)
 app.include_router(pei.router)
 app.include_router(mensagens.router)
 app.include_router(notificacoes.router)
