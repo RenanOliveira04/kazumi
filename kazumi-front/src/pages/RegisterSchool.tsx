@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,22 +8,39 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Building2, School, Users, Plus, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { turmasApi } from "@/services/api";
+import { turmasApi, escolasApi, type Escola } from "@/services/api";
 
 const RegisterSchool = () => {
   const [activeTab, setActiveTab] = useState<"escola" | "turma">("escola");
   const [loading, setLoading] = useState(false);
+  const [escolas, setEscolas] = useState<Escola[]>([]);
 
   // School form state
   const [schoolName, setSchoolName] = useState("");
   const [schoolAddress, setSchoolAddress] = useState("");
   const [schoolPhone, setSchoolPhone] = useState("");
+  const [schoolEmail, setSchoolEmail] = useState("");
 
   // Class form state
+  const [selectedEscola, setSelectedEscola] = useState("");
   const [className, setClassName] = useState("");
   const [classSeries, setClassSeries] = useState("");
   const [classShift, setClassShift] = useState("");
   const [classYear, setClassYear] = useState(new Date().getFullYear().toString());
+
+  useEffect(() => {
+    loadEscolas();
+  }, []);
+
+  const loadEscolas = async () => {
+    try {
+      const response = await escolasApi.list();
+      setEscolas(response.data || []);
+    } catch (error) {
+      console.error("Error loading escolas:", error);
+      setEscolas([]);
+    }
+  };
 
   const handleSchoolSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,20 +51,34 @@ const RegisterSchool = () => {
     }
 
     setLoading(true);
-    // TODO: Integrar com API
-    setTimeout(() => {
+    
+    try {
+      await escolasApi.create({
+        nome: schoolName,
+        endereco: schoolAddress,
+        telefone: schoolPhone,
+        email: schoolEmail,
+      });
+      
       toast.success("Escola cadastrada com sucesso!");
       setSchoolName("");
       setSchoolAddress("");
       setSchoolPhone("");
+      setSchoolEmail("");
+      loadEscolas(); // Reload schools list
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.detail || "Erro ao cadastrar escola";
+      toast.error(errorMessage);
+      console.error("School creation error:", error);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const handleClassSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!className || !classSeries || !classShift) {
+    if (!className || !classSeries || !classShift || !selectedEscola) {
       toast.error("Por favor, preencha todos os campos obrigatórios");
       return;
     }
@@ -64,12 +95,14 @@ const RegisterSchool = () => {
         serie: classSeries,
         turno: classShift,
         ano_letivo: parseInt(classYear),
+        escola_id: parseInt(selectedEscola),
       });
       
       toast.success("Turma cadastrada com sucesso!");
       setClassName("");
       setClassSeries("");
       setClassShift("");
+      setSelectedEscola("");
     } catch (error: any) {
       const errorMessage = error.response?.data?.detail || "Erro ao cadastrar turma";
       toast.error(errorMessage);
@@ -172,6 +205,17 @@ const RegisterSchool = () => {
                   />
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="schoolEmail">Email</Label>
+                  <Input
+                    id="schoolEmail"
+                    type="email"
+                    placeholder="escola@exemplo.com"
+                    value={schoolEmail}
+                    onChange={(e) => setSchoolEmail(e.target.value)}
+                  />
+                </div>
+
                 <Button type="submit" className="w-full" size="lg" disabled={loading}>
                   <Plus className="mr-2 h-5 w-5" />
                   {loading ? "Cadastrando..." : "Cadastrar Escola"}
@@ -195,6 +239,28 @@ const RegisterSchool = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleClassSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="selectedEscola">Escola *</Label>
+                  <Select value={selectedEscola} onValueChange={setSelectedEscola}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a escola" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {escolas.length === 0 ? (
+                        <SelectItem value="_none" disabled>
+                          Nenhuma escola cadastrada
+                        </SelectItem>
+                      ) : (
+                        escolas.map((escola) => (
+                          <SelectItem key={escola.id} value={escola.id.toString()}>
+                            {escola.nome}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="className">Nome da Turma *</Label>

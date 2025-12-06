@@ -1,12 +1,44 @@
 import { useState, useEffect, useRef } from "react";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Mic, ThumbsUp, Heart, HandHeart, CheckCheck } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Send, 
+  Mic, 
+  ThumbsUp, 
+  Heart, 
+  HandHeart, 
+  CheckCheck, 
+  School as SchoolIcon,
+  Users,
+  User,
+  ChevronRight,
+  MessageCircle
+} from "lucide-react";
 import { toast } from "sonner";
-import { mensagensApi, Mensagem } from "@/services/api";
+import { 
+  mensagensApi, 
+  escolasApi, 
+  turmasApi,
+  type Mensagem, 
+  type Escola,
+  type Turma 
+} from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
+
+interface Contact {
+  id: number;
+  user_id: number;
+  nome_completo: string;
+  email: string;
+  tipo: 'professor' | 'responsavel';
+  telefone?: string;
+}
 
 const Messages = () => {
   const { user } = useAuth();
@@ -15,9 +47,17 @@ const Messages = () => {
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Hierarchical selection state
+  const [escolas, setEscolas] = useState<Escola[]>([]);
+  const [selectedEscola, setSelectedEscola] = useState<string>("");
+  const [turmas, setTurmas] = useState<Turma[]>([]);
+  const [selectedTurma, setSelectedTurma] = useState<string>("");
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+
   useEffect(() => {
+    loadEscolas();
     loadMessages();
-    // Polling for new messages every 10 seconds
     const interval = setInterval(loadMessages, 10000);
     return () => clearInterval(interval);
   }, []);
@@ -28,18 +68,97 @@ const Messages = () => {
     }
   }, [messages]);
 
-  const loadMessages = async () => {
+  // Load turmas when escola changes
+  useEffect(() => {
+    if (selectedEscola) {
+      loadTurmas(parseInt(selectedEscola));
+      setSelectedTurma("");
+      setSelectedContact(null);
+      setContacts([]);
+    }
+  }, [selectedEscola]);
+
+  // Load contacts when turma changes
+  useEffect(() => {
+    if (selectedTurma) {
+      loadContacts(parseInt(selectedTurma));
+      setSelectedContact(null);
+    }
+  }, [selectedTurma]);
+
+  // Reload messages when contact changes
+  useEffect(() => {
+    if (selectedContact) {
+      loadMessages();
+    }
+  }, [selectedContact]);
+
+  const loadEscolas = async () => {
     try {
-      // Fetch both inbox and sent messages and merge them
+      const response = await escolasApi.list();
+      setEscolas(response.data || []);
+    } catch (error) {
+      console.error("Error loading escolas:", error);
+      setEscolas([]);
+    }
+  };
+
+  const loadTurmas = async (escolaId: number) => {
+    try {
+      const response = await escolasApi.getTurmas(escolaId);
+      setTurmas(response.data || []);
+    } catch (error) {
+      console.error("Error loading turmas:", error);
+      setTurmas([]);
+    }
+  };
+
+  const loadContacts = async (turmaId: number) => {
+    try {
+      const [professoresRes, responsaveisRes] = await Promise.all([
+        turmasApi.getProfessores(turmaId),
+        turmasApi.getResponsaveis(turmaId)
+      ]);
+
+      const professores = (professoresRes.data || []).map((p: any) => ({
+        ...p,
+        tipo: 'professor' as const
+      }));
+
+      const responsaveis = (responsaveisRes.data || []).map((r: any) => ({
+        ...r,
+        tipo: 'responsavel' as const
+      }));
+
+      setContacts([...professores, ...responsaveis]);
+    } catch (error) {
+      console.error("Error loading contacts:", error);
+      setContacts([]);
+    }
+  };
+
+  const loadMessages = async () => {
+    if (!selectedContact) {
+      setMessages([]);
+      setLoading(false);
+      return;
+    }
+
+    try {
       const [inboxRes, sentRes] = await Promise.all([
         mensagensApi.listInbox(),
         mensagensApi.listSent()
       ]);
-      
-      const allMessages = [...inboxRes.data, ...sentRes.data].sort((a, b) => 
+
+      // Filter messages for selected contact
+      const allMessages = [...inboxRes.data, ...sentRes.data].filter(
+        (msg) =>
+          (msg.remetente_id === selectedContact.user_id && msg.destinatario_id === user?.id) ||
+          (msg.destinatario_id === selectedContact.user_id && msg.remetente_id === user?.id)
+      ).sort((a, b) => 
         new Date(a.enviada_em).getTime() - new Date(b.enviada_em).getTime()
       );
-      
+
       setMessages(allMessages);
     } catch (error) {
       console.error("Error loading messages:", error);
@@ -49,31 +168,14 @@ const Messages = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !selectedContact) {
+      toast.error("Selecione um contato antes de enviar mensagem");
+      return;
+    }
 
     try {
-      // For now, hardcoding a recipient (e.g., the first teacher or admin found, or a specific ID)
-      // In a real app, you'd select the recipient. 
-      // Assuming ID 1 is the school admin/coordinator for simplicity if user is not 1.
-      // If user is 1, send to 2. This needs to be dynamic.
-      // For this demo, let's assume we are replying to the last message's sender if exists, or a default ID.
-      
-      let recipientId = 1; // Default to admin
-      if (messages.length > 0) {
-        const lastReceived = messages.slice().reverse().find(m => m.destinatario_id === user?.id);
-        if (lastReceived) {
-          recipientId = lastReceived.remetente_id;
-        }
-      }
-      
-      // If I am the admin (id 1), send to... wait, I need a better logic.
-      // Let's just say: if I am 'responsavel', I send to 'professor' or 'gestor'.
-      // Since we don't have a contact list UI yet, I'll use a placeholder logic.
-      // If I am user 1, I send to user 2. If I am user 2, I send to user 1.
-      const targetId = user?.id === 1 ? 2 : 1;
-
       await mensagensApi.send({
-        destinatario_id: targetId,
+        destinatario_id: selectedContact.user_id,
         assunto: "Nova mensagem",
         conteudo: newMessage,
         tipo_midia: "texto"
@@ -94,9 +196,6 @@ const Messages = () => {
 
   const handleQuickReaction = async (emoji: string) => {
     setNewMessage(emoji);
-    // Optionally auto-send
-    // await handleSendMessage(); 
-    // But let's just set the text for now so user can confirm
   };
 
   const isMyMessage = (message: Mensagem) => {
@@ -104,7 +203,19 @@ const Messages = () => {
   };
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    return new Date(dateString).toLocaleTimeString("pt-BR", { 
+      hour: "2-digit", 
+      minute: "2-digit" 
+    });
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
   };
 
   return (
@@ -112,40 +223,192 @@ const Messages = () => {
       {/* Header */}
       <header className="bg-card border-b border-border p-4">
         <div className="max-w-screen-lg mx-auto">
-          <h1 className="text-2xl font-bold">Mensagens</h1>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <MessageCircle className="h-6 w-6" />
+            Mensagens
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Comunicação com a escola
           </p>
         </div>
       </header>
 
+      {/* Hierarchical Selection Panel */}
+      <div className="bg-card border-b border-border p-4">
+        <div className="max-w-screen-lg mx-auto">
+          <div className="grid md:grid-cols-3 gap-4">
+            {/* Step 1: Select Escola */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <SchoolIcon className="h-4 w-4 text-primary" />
+                <span>1. Selecione a Escola</span>
+              </div>
+              <Select value={selectedEscola} onValueChange={setSelectedEscola}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Escolher escola..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {escolas.length === 0 ? (
+                    <SelectItem value="_none" disabled>
+                      Nenhuma escola disponível
+                    </SelectItem>
+                  ) : (
+                    escolas.map((escola) => (
+                      <SelectItem key={escola.id} value={escola.id.toString()}>
+                        {escola.nome}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Step 2: Select Turma */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Users className="h-4 w-4 text-primary" />
+                <span>2. Selecione a Turma</span>
+              </div>
+              <Select 
+                value={selectedTurma} 
+                onValueChange={setSelectedTurma}
+                disabled={!selectedEscola}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Escolher turma..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {turmas.length === 0 ? (
+                    <SelectItem value="_none" disabled>
+                      {selectedEscola ? "Nenhuma turma disponível" : "Selecione uma escola primeiro"}
+                    </SelectItem>
+                  ) : (
+                    turmas.map((turma) => (
+                      <SelectItem key={turma.id} value={turma.id.toString()}>
+                        {turma.nome} - {turma.serie}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Step 3: Select Contact */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <User className="h-4 w-4 text-primary" />
+                <span>3. Selecione o Contato</span>
+              </div>
+              <Select 
+                value={selectedContact?.id.toString() || ""} 
+                onValueChange={(value) => {
+                  const contact = contacts.find(c => c.id.toString() === value);
+                  setSelectedContact(contact || null);
+                }}
+                disabled={!selectedTurma}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Escolher contato..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {contacts.length === 0 ? (
+                    <SelectItem value="_none" disabled>
+                      {selectedTurma ? "Nenhum contato disponível" : "Selecione uma turma primeiro"}
+                    </SelectItem>
+                  ) : (
+                    contacts.map((contact) => (
+                      <SelectItem key={contact.id} value={contact.id.toString()}>
+                        <div className="flex items-center gap-2">
+                          {contact.nome_completo}
+                          <Badge variant={contact.tipo === 'professor' ? 'default' : 'secondary'} className="text-xs">
+                            {contact.tipo === 'professor' ? 'Professor' : 'Responsável'}
+                          </Badge>
+                        </div>
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Selected Contact Info */}
+          {selectedContact && (
+            <>
+              <Separator className="my-4" />
+              <Card className="bg-muted/50">
+                <CardContent className="pt-4">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-12 w-12">
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        {getInitials(selectedContact.nome_completo)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <h3 className="font-semibold">{selectedContact.nome_completo}</h3>
+                      <p className="text-sm text-muted-foreground">{selectedContact.email}</p>
+                    </div>
+                    <Badge variant={selectedContact.tipo === 'professor' ? 'default' : 'secondary'}>
+                      {selectedContact.tipo === 'professor' ? 'Professor' : 'Responsável'}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </div>
+      </div>
+
       {/* Messages Area */}
       <ScrollArea className="flex-1 p-4">
         <div className="max-w-screen-lg mx-auto space-y-4">
-          {loading ? (
+          {!selectedContact ? (
+            <Card className="border-dashed">
+              <CardContent className="pt-6 text-center text-muted-foreground">
+                <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p className="font-medium">Selecione um contato para iniciar a conversa</p>
+                <p className="text-sm mt-1">
+                  Escolha uma escola, turma e depois selecione um professor ou responsável
+                </p>
+              </CardContent>
+            </Card>
+          ) : loading ? (
             <p className="text-center text-muted-foreground">Carregando mensagens...</p>
           ) : messages.length === 0 ? (
-            <p className="text-center text-muted-foreground">Nenhuma mensagem.</p>
+            <Card className="border-dashed">
+              <CardContent className="pt-6 text-center text-muted-foreground">
+                <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p className="font-medium">Nenhuma mensagem ainda</p>
+                <p className="text-sm mt-1">
+                  Seja o primeiro a enviar uma mensagem para {selectedContact.nome_completo}
+                </p>
+              </CardContent>
+            </Card>
           ) : (
             messages.map((message) => (
               <div
                 key={message.id}
                 className={`flex ${!isMyMessage(message) ? "justify-start" : "justify-end"}`}
               >
-                <Card
-                  className={`max-w-[80%] p-4 ${
-                    !isMyMessage(message)
-                      ? "bg-card"
-                      : "bg-primary text-primary-foreground"
-                  }`}
-                >
-                  <div className="flex items-start gap-2">
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm mb-1">
-                        {isMyMessage(message) ? "Você" : message.remetente?.nome_completo || "Escola"}
+                <div className={`flex gap-3 max-w-[80%] ${isMyMessage(message) ? "flex-row-reverse" : ""}`}>
+                  <Avatar className="h-10 w-10 shrink-0">
+                    <AvatarFallback className={isMyMessage(message) ? "bg-primary" : "bg-secondary"}>
+                      {getInitials(isMyMessage(message) ? user?.nome_completo || "U" : selectedContact.nome_completo)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Card
+                    className={`p-4 ${
+                      !isMyMessage(message)
+                        ? "bg-card"
+                        : "bg-primary text-primary-foreground"
+                    }`}
+                  >
+                    <div className="flex flex-col gap-2">
+                      <p className="font-semibold text-sm">
+                        {isMyMessage(message) ? "Você" : selectedContact.nome_completo}
                       </p>
                       <p className="text-base leading-relaxed">{message.conteudo}</p>
-                      <div className="flex items-center gap-2 mt-2">
+                      <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs opacity-70">
                           {formatTime(message.enviada_em)}
                         </span>
@@ -159,8 +422,8 @@ const Messages = () => {
                         )}
                       </div>
                     </div>
-                  </div>
-                </Card>
+                  </Card>
+                </div>
               </div>
             ))
           )}
@@ -169,40 +432,42 @@ const Messages = () => {
       </ScrollArea>
 
       {/* Quick Reactions */}
-      <div className="border-t border-border bg-card p-3">
-        <div className="max-w-screen-lg mx-auto">
-          <p className="text-sm text-muted-foreground mb-2">Reações rápidas:</p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => handleQuickReaction("👍")}
-              aria-label="Gostei"
-            >
-              <ThumbsUp className="h-5 w-5 mr-2" />
-              Gostei
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => handleQuickReaction("❤️")}
-              aria-label="Amei"
-            >
-              <Heart className="h-5 w-5 mr-2" />
-              Amei
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => handleQuickReaction("🙏")}
-              aria-label="Obrigado"
-            >
-              <HandHeart className="h-5 w-5 mr-2" />
-              Obrigado
-            </Button>
+      {selectedContact && (
+        <div className="border-t border-border bg-card p-3">
+          <div className="max-w-screen-lg mx-auto">
+            <p className="text-sm text-muted-foreground mb-2">Reações rápidas:</p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleQuickReaction("👍")}
+                aria-label="Gostei"
+              >
+                <ThumbsUp className="h-4 w-4 mr-2" />
+                Gostei
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleQuickReaction("❤️")}
+                aria-label="Amei"
+              >
+                <Heart className="h-4 w-4 mr-2" />
+                Amei
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleQuickReaction("🙏")}
+                aria-label="Obrigado"
+              >
+                <HandHeart className="h-4 w-4 mr-2" />
+                Obrigado
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Input Area */}
       <div className="border-t border-border bg-card p-4">
@@ -213,22 +478,25 @@ const Messages = () => {
             className="h-12 w-12 shrink-0"
             onClick={handleVoiceMessage}
             aria-label="Gravar mensagem de áudio"
+            disabled={!selectedContact}
           >
             <Mic className="h-5 w-5" />
           </Button>
           <Input
-            placeholder="Digite sua mensagem..."
+            placeholder={selectedContact ? "Digite sua mensagem..." : "Selecione um contato primeiro..."}
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
             className="text-base h-12"
             aria-label="Campo de mensagem"
+            disabled={!selectedContact}
           />
           <Button
             size="icon"
             className="h-12 w-12 shrink-0"
             onClick={handleSendMessage}
             aria-label="Enviar mensagem"
+            disabled={!selectedContact || !newMessage.trim()}
           >
             <Send className="h-5 w-5" />
           </Button>

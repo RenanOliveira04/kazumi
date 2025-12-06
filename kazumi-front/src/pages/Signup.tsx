@@ -27,6 +27,15 @@ const Signup = () => {
   const [userType, setUserType] = useState("responsavel");
   const [loading, setLoading] = useState(false);
 
+  const playInstructions = () => {
+    const msg = new SpeechSynthesisUtterance(
+      "Para criar sua conta, preencha seu nome completo, e-mail e escolha uma senha. A senha deve ter pelo menos 6 caracteres. Depois, clique no botão Criar Conta."
+    );
+    msg.lang = "pt-BR";
+    window.speechSynthesis.speak(msg);
+    toast.info("Reproduzindo instruções...");
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -48,35 +57,33 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      // Register user
-      await api.post("/api/auth/register", {
+      const response = await api.post("/auth/register", {
+        nome_completo: fullName,
         email,
         senha: password,
-        nome_completo: fullName,
         tipo_usuario: userType,
-        telefone: "" // Optional
       });
 
-      // Auto login after signup
-      await signIn(email, password);
-      
-      toast.success("Cadastro realizado com sucesso!");
-      navigate("/");
+      if (response.data) {
+        toast.success("Conta criada com sucesso!");
+        
+        // Auto login after signup
+        await signIn(email, password);
+        
+        // Navigate based on user type
+        if (userType === "gestor") {
+          navigate("/register-school");
+        } else {
+          navigate("/home");
+        }
+      }
     } catch (error: any) {
-      toast.error("Erro ao criar conta. Tente novamente.");
       console.error("Signup error:", error);
+      const errorMessage = error.response?.data?.detail || "Erro ao criar conta. Tente novamente.";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
-
-  const playInstructions = () => {
-    const msg = new SpeechSynthesisUtterance(
-      "Para criar sua conta, preencha seu nome completo, e-mail e escolha uma senha. A senha deve ter pelo menos 6 caracteres. Depois, clique no botão Criar Conta."
-    );
-    msg.lang = "pt-BR";
-    window.speechSynthesis.speak(msg);
-    toast.info("Reproduzindo instruções...");
   };
 
   return (

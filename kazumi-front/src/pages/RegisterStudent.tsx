@@ -41,7 +41,7 @@ const RegisterStudent = () => {
 
     try {
       // Step 1: Create user account for student
-      const userResponse = await api.post("/auth/register", {
+      const userResponse = await api.post("/api/auth/register", {
         email: `aluno${matricula}@temp.com`, // Temporary email
         senha: `temp${matricula}123`, // Temporary password
         nome_completo: studentName,
@@ -52,7 +52,7 @@ const RegisterStudent = () => {
       const studentUserId = userResponse.data.id;
 
       // Step 2: Create aluno record
-      await api.post("/users/alunos", {
+      await api.post("/api/users/alunos", {
         user_id: studentUserId,
         matricula: matricula,
         data_nascimento: birthDate || null,

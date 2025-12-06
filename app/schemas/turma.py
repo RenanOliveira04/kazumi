@@ -9,6 +9,7 @@ class TurmaBase(BaseModel):
     ano_letivo: int
     serie: str
     turno: Turno
+    escola_id: Optional[int] = None
     capacidade: Optional[int] = None
 
 
@@ -22,12 +23,12 @@ class TurmaUpdate(BaseModel):
     ano_letivo: Optional[int] = None
     serie: Optional[str] = None
     turno: Optional[Turno] = None
+    escola_id: Optional[int] = None
     capacidade: Optional[int] = None
 
 
 class TurmaResponse(TurmaBase):
     id: int
-    
+
     class Config:
         from_attributes = True
-

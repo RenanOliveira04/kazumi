@@ -136,6 +136,7 @@ export interface Turma {
   serie: string;
   turno: string;
   ano_letivo: number;
+  escola_id?: number;
   sala?: string;
   vagas?: number;
   criado_em: string;
@@ -147,6 +148,7 @@ export interface TurmaCreate {
   serie: string;
   turno: string;
   ano_letivo: number;
+  escola_id?: number;
   sala?: string;
   vagas?: number;
 }
@@ -158,6 +160,10 @@ export const turmasApi = {
   update: (id: number, data: Partial<TurmaCreate>) => api.put<Turma>(`/api/turmas/${id}`, data),
   delete: (id: number) => api.delete(`/api/turmas/${id}`),
   getAlunos: (id: number) => api.get<Aluno[]>(`/api/turmas/${id}/alunos`),
+  getProfessores: (id: number) => api.get(`/api/turmas/${id}/professores`),
+  addProfessor: (turmaId: number, professorId: number) => api.post(`/api/turmas/${turmaId}/professores/${professorId}`),
+  removeProfessor: (turmaId: number, professorId: number) => api.delete(`/api/turmas/${turmaId}/professores/${professorId}`),
+  getResponsaveis: (id: number) => api.get(`/api/turmas/${id}/responsaveis`),
 };
 
 // Atividades (Activities)
@@ -193,6 +199,33 @@ export const atividadesApi = {
   get: (id: number) => api.get<Atividade>(`/api/atividades/${id}`),
   create: (data: AtividadeCreate) => api.post<Atividade>('/api/atividades', data),
   update: (id: number, data: Partial<AtividadeCreate>) => api.put<Atividade>(`/api/atividades/${id}`, data),
+};
+
+// Escolas (Schools)
+export interface Escola {
+  id: number;
+  nome: string;
+  endereco?: string;
+  telefone?: string;
+  email?: string;
+  criado_em: string;
+  atualizado_em?: string;
+}
+
+export interface EscolaCreate {
+  nome: string;
+  endereco?: string;
+  telefone?: string;
+  email?: string;
+}
+
+export const escolasApi = {
+  list: () => api.get<Escola[]>('/api/escolas'),
+  get: (id: number) => api.get<Escola>(`/api/escolas/${id}`),
+  create: (data: EscolaCreate) => api.post<Escola>('/api/escolas', data),
+  update: (id: number, data: Partial<EscolaCreate>) => api.put<Escola>(`/api/escolas/${id}`, data),
+  delete: (id: number) => api.delete(`/api/escolas/${id}`),
+  getTurmas: (id: number) => api.get<Turma[]>(`/api/escolas/${id}/turmas`),
 };
 
 

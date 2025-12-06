@@ -1,10 +1,12 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { Home, MessageSquare, Calendar, BookOpen, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Layout = () => {
   const location = useLocation();
+  const { user } = useAuth();
   
-  const navItems = [
+  const allNavItems = [
     { path: "/", icon: Home, label: "Início" },
     { path: "/mensagens", icon: MessageSquare, label: "Mensagens" },
     { path: "/agenda", icon: Calendar, label: "Agenda" },
@@ -12,6 +14,15 @@ const Layout = () => {
     { path: "/aluno", icon: User, label: "Aluno" },
     { path: "/perfil", icon: User, label: "Perfil" },
   ];
+
+  // Filter navigation items based on user role
+  // Only responsaveis should see the "Aluno" tab
+  const navItems = allNavItems.filter(item => {
+    if (item.path === "/aluno") {
+      return user?.tipo_usuario === "responsavel";
+    }
+    return true;
+  });
 
   return (
     <div className="flex flex-col min-h-screen">

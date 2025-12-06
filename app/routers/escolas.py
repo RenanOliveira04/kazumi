@@ -104,3 +104,22 @@ async def delete_escola(
     db.commit()
 
     return None
+
+
+@router.get("/{escola_id}/turmas")
+async def list_turmas_by_escola(
+    escola_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Lista todas as turmas de uma escola"""
+    from app.models.turma import Turma
+
+    escola = db.query(Escola).filter(Escola.id == escola_id).first()
+    if not escola:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Escola não encontrada"
+        )
+
+    turmas = db.query(Turma).filter(Turma.escola_id == escola_id).all()
+    return turmas

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from app.database import get_db
-from app.models import Turma, Aluno, User, TipoUsuario
+from app.models import Turma, Aluno, User, TipoUsuario, Professor, Escola
 from app.schemas import TurmaCreate, TurmaUpdate, TurmaResponse, AlunoResponse
 from app.utils.dependencies import get_current_active_user, require_role
 
@@ -13,22 +13,29 @@ router = APIRouter(prefix="/api/turmas", tags=["Turmas"])
 async def create_turma(
     turma_data: TurmaCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role(TipoUsuario.GESTOR))
+    current_user: User = Depends(require_role(TipoUsuario.GESTOR)),
 ):
     """Cria uma nova turma"""
     # Verifica se o código já existe
     existing = db.query(Turma).filter(Turma.codigo == turma_data.codigo).first()
     if existing:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Código de turma já existe"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Código de turma já existe"
         )
-    
+
+    # Verifica se a escola existe (se escola_id foi fornecido)
+    if turma_data.escola_id:
+        escola = db.query(Escola).filter(Escola.id == turma_data.escola_id).first()
+        if not escola:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Escola não encontrada"
+            )
+
     db_turma = Turma(**turma_data.model_dump())
     db.add(db_turma)
     db.commit()
     db.refresh(db_turma)
-    
+
     return db_turma
 
 
@@ -38,14 +45,14 @@ async def list_turmas(
     limit: int = 100,
     ano_letivo: int = None,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
 ):
     """Lista todas as turmas"""
     query = db.query(Turma)
-    
+
     if ano_letivo:
         query = query.filter(Turma.ano_letivo == ano_letivo)
-    
+
     turmas = query.offset(skip).limit(limit).all()
     return turmas
 
@@ -54,17 +61,16 @@ async def list_turmas(
 async def get_turma(
     turma_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
 ):
     """Retorna os detalhes de uma turma"""
     turma = db.query(Turma).filter(Turma.id == turma_id).first()
-    
+
     if not turma:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Turma não encontrada"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Turma não encontrada"
         )
-    
+
     return turma
 
 
@@ -72,16 +78,17 @@ async def get_turma(
 async def list_alunos_turma(
     turma_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role(TipoUsuario.PROFESSOR, TipoUsuario.GESTOR))
+    current_user: User = Depends(
+        require_role(TipoUsuario.PROFESSOR, TipoUsuario.GESTOR)
+    ),
 ):
     """Lista todos os alunos de uma turma"""
     turma = db.query(Turma).filter(Turma.id == turma_id).first()
     if not turma:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Turma não encontrada"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Turma não encontrada"
         )
-    
+
     alunos = db.query(Aluno).filter(Aluno.turma_id == turma_id).all()
     return alunos
 
@@ -91,21 +98,20 @@ async def update_turma(
     turma_id: int,
     turma_update: TurmaUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role(TipoUsuario.GESTOR))
+    current_user: User = Depends(require_role(TipoUsuario.GESTOR)),
 ):
     """Atualiza uma turma"""
     turma = db.query(Turma).filter(Turma.id == turma_id).first()
-    
+
     if not turma:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Turma não encontrada"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Turma não encontrada"
         )
-    
+
     update_data = turma_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(turma, field, value)
-    
+
     db.commit()
     db.refresh(turma)
     return turma
@@ -115,19 +121,157 @@ async def update_turma(
 async def delete_turma(
     turma_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role(TipoUsuario.GESTOR))
+    current_user: User = Depends(require_role(TipoUsuario.GESTOR)),
 ):
     """Deleta uma turma"""
     turma = db.query(Turma).filter(Turma.id == turma_id).first()
-    
+
     if not turma:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Turma não encontrada"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Turma não encontrada"
         )
-    
+
     db.delete(turma)
     db.commit()
-    
+
     return None
 
+
+@router.post(
+    "/{turma_id}/professores/{professor_id}", status_code=status.HTTP_201_CREATED
+)
+async def add_professor_to_turma(
+    turma_id: int,
+    professor_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(TipoUsuario.GESTOR)),
+):
+    """Adiciona um professor a uma turma"""
+    turma = db.query(Turma).filter(Turma.id == turma_id).first()
+    if not turma:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Turma não encontrada"
+        )
+
+    professor = db.query(Professor).filter(Professor.id == professor_id).first()
+    if not professor:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Professor não encontrado"
+        )
+
+    # Verifica se o professor já está na turma
+    if professor in turma.professores:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Professor já está associado a esta turma",
+        )
+
+    turma.professores.append(professor)
+    db.commit()
+
+    return {"message": "Professor adicionado à turma com sucesso"}
+
+
+@router.delete(
+    "/{turma_id}/professores/{professor_id}", status_code=status.HTTP_204_NO_CONTENT
+)
+async def remove_professor_from_turma(
+    turma_id: int,
+    professor_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(TipoUsuario.GESTOR)),
+):
+    """Remove um professor de uma turma"""
+    turma = db.query(Turma).filter(Turma.id == turma_id).first()
+    if not turma:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Turma não encontrada"
+        )
+
+    professor = db.query(Professor).filter(Professor.id == professor_id).first()
+    if not professor:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Professor não encontrado"
+        )
+
+    if professor not in turma.professores:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Professor não está associado a esta turma",
+        )
+
+    turma.professores.remove(professor)
+    db.commit()
+
+    return None
+
+
+@router.get("/{turma_id}/professores")
+async def list_professores_turma(
+    turma_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Lista todos os professores de uma turma"""
+    turma = db.query(Turma).filter(Turma.id == turma_id).first()
+    if not turma:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Turma não encontrada"
+        )
+
+    professores = [
+        {
+            "id": prof.id,
+            "user_id": prof.user_id,
+            "nome_completo": prof.user.nome_completo,
+            "email": prof.user.email,
+            "matricula": prof.matricula,
+            "formacao": prof.formacao,
+        }
+        for prof in turma.professores
+    ]
+    return professores
+
+
+@router.get("/{turma_id}/responsaveis")
+async def list_responsaveis_turma(
+    turma_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role(TipoUsuario.PROFESSOR, TipoUsuario.GESTOR)
+    ),
+):
+    """Lista todos os responsáveis (pais) dos alunos de uma turma"""
+    turma = db.query(Turma).filter(Turma.id == turma_id).first()
+    if not turma:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Turma não encontrada"
+        )
+
+    # Busca todos os alunos da turma
+    alunos = db.query(Aluno).filter(Aluno.turma_id == turma_id).all()
+
+    # Coleta os responsáveis únicos
+    responsaveis_dict = {}
+    for aluno in alunos:
+        if aluno.responsavel_id and aluno.responsavel:
+            resp = aluno.responsavel
+            if resp.id not in responsaveis_dict:
+                responsaveis_dict[resp.id] = {
+                    "id": resp.id,
+                    "user_id": resp.user_id,
+                    "nome_completo": resp.user.nome_completo,
+                    "email": resp.user.email,
+                    "telefone": resp.user.telefone,
+                    "parentesco": resp.parentesco,
+                    "alunos": [],
+                }
+            responsaveis_dict[resp.id]["alunos"].append(
+                {
+                    "id": aluno.id,
+                    "nome": aluno.user.nome_completo,
+                    "matricula": aluno.matricula,
+                }
+            )
+
+    return list(responsaveis_dict.values())

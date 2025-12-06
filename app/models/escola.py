@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
 
@@ -14,5 +15,5 @@ class Escola(Base):
     criado_em = Column(DateTime(timezone=True), server_default=func.now())
     atualizado_em = Column(DateTime(timezone=True), onupdate=func.now())
 
-    # Relationships (if needed in the future)
-    # turmas = relationship("Turma", back_populates="escola")
+    # Relationships
+    turmas = relationship("Turma", back_populates="escola")

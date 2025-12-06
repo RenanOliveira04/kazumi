@@ -56,37 +56,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
       setLoading(false);
     };
-
-    loadUser();
-  }, []);
-
-  const signIn = async (email: string, senha: string) => {
-    try {
-      const response = await api.post("/api/auth/login", new URLSearchParams({
-        username: email,
-        password: senha,
-      }), {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      });
-      
-      const { access_token } = response.data;
-      localStorage.setItem("token", access_token);
-      
-      // Fetch user details after login
-      const userResponse = await api.get<User>("/api/users/me");
-      setUser(userResponse.data);
-      
-      navigate("/");
-    } catch (error) {
-      console.error("Login failed", error);
-      throw error;
-    }
-  };
-
-  const signOut = () => {
-    localStorage.removeItem("token");
     setUser(null);
     navigate("/login");
   };
