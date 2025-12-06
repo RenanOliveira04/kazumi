@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Volume2, Heart } from "lucide-react";
+import { Volume2 } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -49,7 +49,7 @@ const Signup = () => {
 
     try {
       // Register user
-      await api.post("/auth/register", {
+      await api.post("/api/auth/register", {
         email,
         senha: password,
         nome_completo: fullName,
@@ -83,11 +83,12 @@ const Signup = () => {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-4 text-center">
-          <div className="mx-auto flex items-center justify-center gap-2">
-            <Heart className="h-10 w-10 text-secondary fill-secondary" />
-            <h1 className="text-4xl font-bold gradient-primary bg-clip-text text-transparent">
-              Kazumi
-            </h1>
+          <div className="mx-auto flex items-center justify-center">
+            <img 
+              src="/logo.jpg" 
+              alt="Kazumi Logo" 
+              className="h-16 w-auto object-contain"
+            />
           </div>
           <CardTitle className="text-2xl">Criar Conta</CardTitle>
           <CardDescription className="text-base">

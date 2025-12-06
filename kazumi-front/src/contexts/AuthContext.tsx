@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const token = localStorage.getItem("token");
       if (token) {
         try {
-          const response = await api.get<User>("/users/me");
+          const response = await api.get<User>("/api/users/me");
           setUser(response.data);
         } catch (error) {
           console.error("Failed to load user", error);
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signIn = async (email: string, senha: string) => {
     try {
-      const response = await api.post("/auth/login", new URLSearchParams({
+      const response = await api.post("/api/auth/login", new URLSearchParams({
         username: email,
         password: senha,
       }), {
@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       localStorage.setItem("token", access_token);
       
       // Fetch user details after login
-      const userResponse = await api.get<User>("/users/me");
+      const userResponse = await api.get<User>("/api/users/me");
       setUser(userResponse.data);
       
       navigate("/");

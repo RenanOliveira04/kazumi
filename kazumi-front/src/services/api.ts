@@ -101,31 +101,31 @@ export interface IntervencaoPedagogica {
 }
 
 export const eventosApi = {
-  list: () => api.get<Evento[]>('/eventos'),
-  get: (id: number) => api.get<Evento>(`/eventos/${id}`),
+  list: () => api.get<Evento[]>('/api/eventos'),
+  get: (id: number) => api.get<Evento>(`/api/eventos/${id}`),
 };
 
 export const mensagensApi = {
-  listInbox: () => api.get<Mensagem[]>('/mensagens'),
-  listSent: () => api.get<Mensagem[]>('/mensagens/enviadas'),
-  send: (data: Partial<Mensagem>) => api.post<Mensagem>('/mensagens', data),
-  markAsRead: (id: number) => api.post<Mensagem>(`/mensagens/${id}/confirmar-leitura`),
+  listInbox: () => api.get<Mensagem[]>('/api/mensagens'),
+  listSent: () => api.get<Mensagem[]>('/api/mensagens/enviadas'),
+  send: (data: Partial<Mensagem>) => api.post<Mensagem>('/api/mensagens', data),
+  markAsRead: (id: number) => api.post<Mensagem>(`/api/mensagens/${id}/confirmar-leitura`),
 };
 
 export const notificacoesApi = {
-  list: () => api.get<Notificacao[]>('/notificacoes'),
-  markAsRead: (id: number) => api.post(`/notificacoes/${id}/marcar-lida`),
-  getUnreadCount: () => api.get<{ count: number }>('/notificacoes/nao-lidas/count'),
+  list: () => api.get<Notificacao[]>('/api/notificacoes'),
+  markAsRead: (id: number) => api.post(`/api/notificacoes/${id}/marcar-lida`),
+  getUnreadCount: () => api.get<{ count: number }>('/api/notificacoes/nao-lidas/count'),
 };
 
 export const alunosApi = {
-  list: () => api.get<Aluno[]>('/alunos'),
-  get: (id: number) => api.get<Aluno>(`/alunos/${id}`),
+  list: () => api.get<Aluno[]>('/api/alunos'),
+  get: (id: number) => api.get<Aluno>(`/api/alunos/${id}`),
 };
 
 export const peiApi = {
-  getByAluno: (alunoId: number) => api.get<PEI>(`/peis/aluno/${alunoId}`),
-  getIntervencoes: (peiId: number) => api.get<IntervencaoPedagogica[]>(`/peis/${peiId}/intervencoes`),
+  getByAluno: (alunoId: number) => api.get<PEI>(`/api/peis/aluno/${alunoId}`),
+  getIntervencoes: (peiId: number) => api.get<IntervencaoPedagogica[]>(`/api/peis/${peiId}/intervencoes`),
 };
 
 export default api;
