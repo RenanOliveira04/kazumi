@@ -33,6 +33,27 @@ def upgrade() -> None:
     )
     op.create_index(op.f("ix_disciplinas_id"), "disciplinas", ["id"], unique=False)
     op.create_index(op.f("ix_disciplinas_nome"), "disciplinas", ["nome"], unique=False)
+
+    # Create escolas table
+    op.create_table(
+        "escolas",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("nome", sa.String(), nullable=False),
+        sa.Column("endereco", sa.String(), nullable=True),
+        sa.Column("telefone", sa.String(), nullable=True),
+        sa.Column("email", sa.String(), nullable=True),
+        sa.Column(
+            "criado_em",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=True,
+        ),
+        sa.Column("atualizado_em", sa.DateTime(timezone=True), nullable=True),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(op.f("ix_escolas_id"), "escolas", ["id"], unique=False)
+    op.create_index(op.f("ix_escolas_nome"), "escolas", ["nome"], unique=False)
+
     op.create_table(
         "turmas",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -527,11 +548,10 @@ def downgrade() -> None:
     )
     op.drop_index(op.f("ix_gestores_escolares_id"), table_name="gestores_escolares")
     op.drop_table("gestores_escolares")
-    op.drop_index(op.f("ix_eventos_escolares_titulo"), table_name="eventos_escolares")
+    op.drop_index(op.f("ix_gestores_escolares_id"), table_name="gestores_escolares")
+    op.drop_table("gestores_escolares")
+    op.drop_index(op.f("ix_eventos_escolares_turma_id"), table_name="eventos_escolares")
     op.drop_index(op.f("ix_eventos_escolares_id"), table_name="eventos_escolares")
-    op.drop_index(
-        op.f("ix_eventos_escolares_data_evento"), table_name="eventos_escolares"
-    )
     op.drop_table("eventos_escolares")
     op.drop_index(op.f("ix_users_id"), table_name="users")
     op.drop_index(op.f("ix_users_email"), table_name="users")
@@ -540,6 +560,9 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_turmas_id"), table_name="turmas")
     op.drop_index(op.f("ix_turmas_codigo"), table_name="turmas")
     op.drop_table("turmas")
+    op.drop_index(op.f("ix_escolas_nome"), table_name="escolas")
+    op.drop_index(op.f("ix_escolas_id"), table_name="escolas")
+    op.drop_table("escolas")
     op.drop_index(op.f("ix_disciplinas_nome"), table_name="disciplinas")
     op.drop_index(op.f("ix_disciplinas_id"), table_name="disciplinas")
     op.drop_index(op.f("ix_disciplinas_codigo"), table_name="disciplinas")
