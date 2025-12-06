@@ -3,7 +3,7 @@ Router para upload de arquivos
 """
 
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
-from app.utils.auth import get_current_user
+from app.utils.dependencies import get_current_user
 from app.models.usuario import Usuario
 from app.services.local_storage_service import local_storage_service
 
