@@ -70,11 +70,11 @@ const Signup = () => {
         // Auto login after signup
         await signIn(email, password);
         
-        // Navigate based on user type
+        // Navigate based on user type - corrected route
         if (userType === "gestor") {
           navigate("/register-school");
         } else {
-          navigate("/home");
+          navigate("/");
         }
       }
     } catch (error: any) {
