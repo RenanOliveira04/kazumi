@@ -5,6 +5,7 @@ from app.models.aluno import Aluno
 from app.models.gestor import GestorEscolar
 from app.models.disciplina import Disciplina
 from app.models.turma import Turma, Turno
+from app.models.escola import Escola
 from app.models.avaliacao import Avaliacao
 from app.models.atividade import Atividade, EntregaAtividade
 from app.models.pei import PEI, IntervencaoPedagogica
@@ -24,6 +25,7 @@ __all__ = [
     "Disciplina",
     "Turma",
     "Turno",
+    "Escola",
     "Avaliacao",
     "Atividade",
     "EntregaAtividade",

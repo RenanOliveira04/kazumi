@@ -11,6 +11,7 @@ from app.routers import (
     atividades,
     disciplinas,
     turmas,
+    escolas,
     avaliacoes,
     metricas,
     relatorios,
@@ -44,6 +45,7 @@ app.include_router(eventos.router)
 app.include_router(atividades.router)
 app.include_router(disciplinas.router)
 app.include_router(turmas.router)
+app.include_router(escolas.router)
 app.include_router(avaliacoes.router)
 app.include_router(metricas.router)
 app.include_router(relatorios.router)

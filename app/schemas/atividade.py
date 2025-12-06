@@ -4,13 +4,13 @@ from datetime import date, datetime
 
 
 class AtividadeBase(BaseModel):
-    turma_id: int
-    disciplina_id: int
+    turma_id: Optional[int] = None
+    disciplina_id: Optional[int] = None
     professor_id: Optional[int] = None
     titulo: str
     descricao: str
     tipo: Optional[str] = None
-    data_entrega: date
+    data_entrega: Optional[date] = None
     pontuacao_maxima: Optional[int] = None
     anexo_url: Optional[str] = None
 
@@ -31,7 +31,7 @@ class AtividadeUpdate(BaseModel):
 class AtividadeResponse(AtividadeBase):
     id: int
     data_criacao: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -52,7 +52,6 @@ class EntregaAtividadeCreate(EntregaAtividadeBase):
 class EntregaAtividadeResponse(EntregaAtividadeBase):
     id: int
     data_entrega: datetime
-    
+
     class Config:
         from_attributes = True
-

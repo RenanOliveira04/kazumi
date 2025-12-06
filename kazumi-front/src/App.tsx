@@ -15,6 +15,9 @@ import Content from "./pages/Content";
 import Profile from "./pages/Profile";
 import StudentDetails from "./pages/StudentDetails";
 import RegisterStudent from "./pages/RegisterStudent";
+import RegisterSchool from "./pages/RegisterSchool";
+import CreateActivity from "./pages/CreateActivity";
+import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +40,9 @@ const App = () => (
               <Route path="/perfil" element={<Profile />} />
               <Route path="/aluno" element={<StudentDetails />} />
               <Route path="/cadastrar-aluno" element={<RegisterStudent />} />
+              <Route path="/cadastrar-escola" element={<RegisterSchool />} />
+              <Route path="/criar-atividade" element={<CreateActivity />} />
+              <Route path="/relatorios" element={<Reports />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bell, MessageSquare, Calendar, BookOpen, TrendingUp, UserPlus } from "lucide-react";
+import { Bell, MessageSquare, Calendar, BookOpen, TrendingUp, UserPlus, Building2, ClipboardList, Upload } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { notificacoesApi, mensagensApi, eventosApi, alunosApi } from "@/services/api";
@@ -157,47 +157,170 @@ const Dashboard = () => {
             {/* Quick Actions */}
             <section aria-labelledby="quick-actions">
               <h2 id="quick-actions" className="text-xl font-semibold mb-4">
-                Acesso Rápido
+                {user?.tipo_usuario === "gestor" ? "Gestão Escolar" : "Acesso Rápido"}
               </h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                <Link to="/mensagens">
-                  <Card className="hover:shadow-md transition-shadow cursor-pointer border-2 hover:border-primary">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-3">
-                        <div className="p-3 rounded-lg bg-primary/10">
-                          <MessageSquare className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                          <div>Mensagens</div>
-                          <div className="text-sm font-normal text-muted-foreground mt-1">
-                            {unreadMessages > 0 
-                              ? `${unreadMessages} ${unreadMessages === 1 ? "nova mensagem" : "novas mensagens"}`
-                              : "Nenhuma mensagem nova"}
+              
+              {/* Gestor Dashboard - School Management */}
+              {user?.tipo_usuario === "gestor" ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Cadastrar Escolas e Turmas */}
+                  <Link to="/cadastrar-escola">
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer border-2 hover:border-primary h-full">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-3">
+                          <div className="p-3 rounded-lg bg-primary/10">
+                            <Building2 className="h-6 w-6 text-primary" />
                           </div>
-                        </div>
-                      </CardTitle>
-                    </CardHeader>
-                  </Card>
-                </Link>
+                          <div>
+                            <div>Escolas e Turmas</div>
+                            <div className="text-sm font-normal text-muted-foreground mt-1">
+                              Cadastrar e gerenciar
+                            </div>
+                          </div>
+                        </CardTitle>
+                      </CardHeader>
+                    </Card>
+                  </Link>
 
-                <Link to="/agenda">
-                  <Card className="hover:shadow-md transition-shadow cursor-pointer border-2 hover:border-secondary">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-3">
-                        <div className="p-3 rounded-lg bg-secondary/10">
-                          <Calendar className="h-6 w-6 text-secondary" />
-                        </div>
-                        <div>
-                          <div>Agenda</div>
-                          <div className="text-sm font-normal text-muted-foreground mt-1">
-                            {nextEvent ? `${nextEvent.title} ${nextEvent.time}` : "Nenhum evento próximo"}
+                  {/* Criar Atividades */}
+                  <Link to="/criar-atividade">
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer border-2 hover:border-secondary h-full">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-3">
+                          <div className="p-3 rounded-lg bg-secondary/10">
+                            <ClipboardList className="h-6 w-6 text-secondary" />
                           </div>
-                        </div>
-                      </CardTitle>
-                    </CardHeader>
-                  </Card>
-                </Link>
-              </div>
+                          <div>
+                            <div>Criar Atividades</div>
+                            <div className="text-sm font-normal text-muted-foreground mt-1">
+                              Tarefas para turmas
+                            </div>
+                          </div>
+                        </CardTitle>
+                      </CardHeader>
+                    </Card>
+                  </Link>
+
+                  {/* Gerenciar Agenda */}
+                  <Link to="/agenda">
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer border-2 hover:border-info h-full">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-3">
+                          <div className="p-3 rounded-lg bg-info/10">
+                            <Calendar className="h-6 w-6 text-info" />
+                          </div>
+                          <div>
+                            <div>Agenda Escolar</div>
+                            <div className="text-sm font-normal text-muted-foreground mt-1">
+                              {nextEvent ? `${nextEvent.title} ${nextEvent.time}` : "Criar eventos"}
+                            </div>
+                          </div>
+                        </CardTitle>
+                      </CardHeader>
+                    </Card>
+                  </Link>
+
+                  {/* Mensagens para Pais */}
+                  <Link to="/mensagens">
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer border-2 hover:border-success h-full">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-3">
+                          <div className="p-3 rounded-lg bg-success/10">
+                            <MessageSquare className="h-6 w-6 text-success" />
+                          </div>
+                          <div>
+                            <div>Mensagens</div>
+                            <div className="text-sm font-normal text-muted-foreground mt-1">
+                              {unreadMessages > 0 
+                                ? `${unreadMessages} ${unreadMessages === 1 ? "nova" : "novas"}`
+                                : "Enviar para pais"}
+                            </div>
+                          </div>
+                        </CardTitle>
+                      </CardHeader>
+                    </Card>
+                  </Link>
+
+                  {/* Upload de Conteúdos */}
+                  <Link to="/conteudos">
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer border-2 hover:border-warning h-full">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-3">
+                          <div className="p-3 rounded-lg bg-warning/10">
+                            <Upload className="h-6 w-6 text-warning" />
+                          </div>
+                          <div>
+                            <div>Upload Conteúdos</div>
+                            <div className="text-sm font-normal text-muted-foreground mt-1">
+                              Materiais educativos
+                            </div>
+                          </div>
+                        </CardTitle>
+                      </CardHeader>
+                    </Card>
+                  </Link>
+
+                  {/* Ver Relatórios */}
+                  <Link to="/relatorios">
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer border-2 hover:border-purple-500 h-full">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-3">
+                          <div className="p-3 rounded-lg bg-purple-500/10">
+                            <TrendingUp className="h-6 w-6 text-purple-500" />
+                          </div>
+                          <div>
+                            <div>Relatórios</div>
+                            <div className="text-sm font-normal text-muted-foreground mt-1">
+                              Métricas e análises
+                            </div>
+                          </div>
+                        </CardTitle>
+                      </CardHeader>
+                    </Card>
+                  </Link>
+                </div>
+              ) : (
+                /* Default Dashboard for other users */
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Link to="/mensagens">
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer border-2 hover:border-primary">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-3">
+                          <div className="p-3 rounded-lg bg-primary/10">
+                            <MessageSquare className="h-6 w-6 text-primary" />
+                          </div>
+                          <div>
+                            <div>Mensagens</div>
+                            <div className="text-sm font-normal text-muted-foreground mt-1">
+                              {unreadMessages > 0 
+                                ? `${unreadMessages} ${unreadMessages === 1 ? "nova mensagem" : "novas mensagens"}`
+                                : "Nenhuma mensagem nova"}
+                            </div>
+                          </div>
+                        </CardTitle>
+                      </CardHeader>
+                    </Card>
+                  </Link>
+
+                  <Link to="/agenda">
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer border-2 hover:border-secondary">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-3">
+                          <div className="p-3 rounded-lg bg-secondary/10">
+                            <Calendar className="h-6 w-6 text-secondary" />
+                          </div>
+                          <div>
+                            <div>Agenda</div>
+                            <div className="text-sm font-normal text-muted-foreground mt-1">
+                              {nextEvent ? `${nextEvent.title} ${nextEvent.time}` : "Nenhum evento próximo"}
+                            </div>
+                          </div>
+                        </CardTitle>
+                      </CardHeader>
+                    </Card>
+                  </Link>
+                </div>
+              )}
             </section>
 
             {/* Progress Summary - Only for responsaveis with students */}

@@ -128,4 +128,72 @@ export const peiApi = {
   getIntervencoes: (peiId: number) => api.get<IntervencaoPedagogica[]>(`/api/peis/${peiId}/intervencoes`),
 };
 
+// Turmas (Classes)
+export interface Turma {
+  id: number;
+  nome: string;
+  codigo: string;
+  serie: string;
+  turno: string;
+  ano_letivo: number;
+  sala?: string;
+  vagas?: number;
+  criado_em: string;
+}
+
+export interface TurmaCreate {
+  nome: string;
+  codigo: string;
+  serie: string;
+  turno: string;
+  ano_letivo: number;
+  sala?: string;
+  vagas?: number;
+}
+
+export const turmasApi = {
+  list: (anoLetivo?: number) => api.get<Turma[]>('/api/turmas', { params: { ano_letivo: anoLetivo } }),
+  get: (id: number) => api.get<Turma>(`/api/turmas/${id}`),
+  create: (data: TurmaCreate) => api.post<Turma>('/api/turmas', data),
+  update: (id: number, data: Partial<TurmaCreate>) => api.put<Turma>(`/api/turmas/${id}`, data),
+  delete: (id: number) => api.delete(`/api/turmas/${id}`),
+  getAlunos: (id: number) => api.get<Aluno[]>(`/api/turmas/${id}/alunos`),
+};
+
+// Atividades (Activities)
+export interface Atividade {
+  id: number;
+  titulo: string;
+  descricao: string;
+  tipo_atividade?: string;
+  disciplina_id?: number;
+  turma_id?: number;
+  professor_id?: number;
+  data_criacao: string;
+  data_entrega?: string;
+  pontuacao_maxima?: number;
+}
+
+export interface AtividadeCreate {
+  titulo: string;
+  descricao: string;
+  tipo_atividade?: string;
+  disciplina_id?: number;
+  turma_id?: number;
+  professor_id?: number;
+  data_entrega?: string;
+  pontuacao_maxima?: number;
+}
+
+export const atividadesApi = {
+  list: (turmaId?: number, disciplinaId?: number) => 
+    api.get<Atividade[]>('/api/atividades', { 
+      params: { turma_id: turmaId, disciplina_id: disciplinaId } 
+    }),
+  get: (id: number) => api.get<Atividade>(`/api/atividades/${id}`),
+  create: (data: AtividadeCreate) => api.post<Atividade>('/api/atividades', data),
+  update: (id: number, data: Partial<AtividadeCreate>) => api.put<Atividade>(`/api/atividades/${id}`, data),
+};
+
+
 export default api;
