@@ -72,6 +72,8 @@ services:
     build:
       context: ./kazumi-front
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://ec2-3-137-179-33.us-east-2.compute.amazonaws.com:8000}
     container_name: kazumi_frontend
     platform: linux/amd64
     volumes:

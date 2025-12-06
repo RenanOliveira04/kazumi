@@ -15,6 +15,10 @@ RUN npm install
 # Copiar todo o código fonte
 COPY . .
 
+# Argumento de build para API URL
+ARG VITE_API_URL=http://localhost:8000
+ENV VITE_API_URL=${VITE_API_URL}
+
 # Build da aplicação React
 RUN npm run build
 
