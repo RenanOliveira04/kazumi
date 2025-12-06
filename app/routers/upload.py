@@ -4,7 +4,7 @@ Router para upload de arquivos
 
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from app.utils.dependencies import get_current_user
-from app.models.usuario import Usuario
+from app.models.user import User
 from app.services.local_storage_service import local_storage_service
 
 router = APIRouter(prefix="/upload", tags=["Upload"])
@@ -12,7 +12,7 @@ router = APIRouter(prefix="/upload", tags=["Upload"])
 
 @router.post("/profile-picture", response_model=dict)
 async def upload_profile_picture(
-    file: UploadFile = File(...), current_user: Usuario = Depends(get_current_user)
+    file: UploadFile = File(...), current_user: User = Depends(get_current_user)
 ):
     """
     Upload de foto de perfil do usuário
@@ -52,7 +52,7 @@ async def upload_profile_picture(
 async def upload_student_document(
     student_id: int,
     file: UploadFile = File(...),
-    current_user: Usuario = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Upload de documento de aluno (PDF, DOC, DOCX)
@@ -90,7 +90,7 @@ async def upload_student_document(
 
 @router.post("/educational-material", response_model=dict)
 async def upload_educational_material(
-    file: UploadFile = File(...), current_user: Usuario = Depends(get_current_user)
+    file: UploadFile = File(...), current_user: User = Depends(get_current_user)
 ):
     """
     Upload de material educativo
