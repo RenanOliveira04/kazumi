@@ -61,14 +61,39 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signIn = async (email: string, senha: string) => {
     try {
-      const response = await api.post("/api/auth/login", { email, senha });
+      console.log("Attempting login for:", email);
+      
+      const response = await api.post("/api/auth/login", 
+        new URLSearchParams({
+          username: email,
+          password: senha,
+        }), 
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        }
+      );
+      
       const { access_token } = response.data;
       localStorage.setItem("token", access_token);
+      
+      console.log("Login successful, fetching user details...");
+      
       const userResponse = await api.get<User>("/api/users/me");
       setUser(userResponse.data);
+      
+      console.log("User loaded:", userResponse.data);
       navigate("/");
-    } catch (error) {
-      console.error("Login failed", error);
+    } catch (error: any) {
+      console.error("Login failed:", error);
+      
+      if (error.response) {
+        console.error("Server error:", error.response.status, error.response.data);
+      } else if (error.request) {
+        console.error("No response from server. Check if backend is running.");
+      }
+      
       throw error;
     }
   };
