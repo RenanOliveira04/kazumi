@@ -122,6 +122,7 @@ export const notificacoesApi = {
 export const alunosApi = {
   list: () => api.get<Aluno[]>('/api/alunos'),
   get: (id: number) => api.get<Aluno>(`/api/alunos/${id}`),
+  create: (data: any) => api.post<Aluno>('/api/alunos', data),
 };
 
 export const peiApi = {
