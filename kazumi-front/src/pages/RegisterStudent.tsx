@@ -45,20 +45,6 @@ const RegisterStudent = () => {
         email: `aluno${matricula}@temp.com`, // Temporary email
         senha: `temp${matricula}123`, // Temporary password
         nome_completo: studentName,
-        tipo_usuario: "aluno",
-        telefone: ""
-      });
-
-      const studentUserId = userResponse.data.id;
-
-      // Step 2: Create aluno record
-      await api.post("/api/users/alunos", {
-        user_id: studentUserId,
-        matricula: matricula,
-        data_nascimento: birthDate || null,
-        necessidades_especiais: hasSpecialNeeds,
-        descricao_necessidades: hasSpecialNeeds ? needsDescription : null,
-        pei_ativo: false
       });
 
       toast.success("Aluno cadastrado com sucesso!");
