@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 from app.models.turma import Turno
+from app.schemas.escola import EscolaResponse
 
 
 class TurmaBase(BaseModel):
@@ -29,6 +30,7 @@ class TurmaUpdate(BaseModel):
 
 class TurmaResponse(TurmaBase):
     id: int
+    escola: Optional[EscolaResponse] = None
 
     class Config:
         from_attributes = True

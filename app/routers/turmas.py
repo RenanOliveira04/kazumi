@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 from app.database import get_db
 from app.models import Turma, Aluno, User, TipoUsuario, Professor, Escola
@@ -48,7 +48,7 @@ async def list_turmas(
     current_user: User = Depends(get_current_active_user),
 ):
     """Lista todas as turmas"""
-    query = db.query(Turma)
+    query = db.query(Turma).options(joinedload(Turma.escola))
 
     if ano_letivo:
         query = query.filter(Turma.ano_letivo == ano_letivo)
@@ -64,7 +64,7 @@ async def get_turma(
     current_user: User = Depends(get_current_active_user),
 ):
     """Retorna os detalhes de uma turma"""
-    turma = db.query(Turma).filter(Turma.id == turma_id).first()
+    turma = db.query(Turma).options(joinedload(Turma.escola)).filter(Turma.id == turma_id).first()
 
     if not turma:
         raise HTTPException(
