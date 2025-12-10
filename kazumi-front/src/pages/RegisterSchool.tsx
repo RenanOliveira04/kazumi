@@ -10,6 +10,16 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { turmasApi, escolasApi, type Escola } from "@/services/api";
 
+interface AxiosError {
+  response?: {
+    status: number;
+    data?: {
+      detail?: string;
+    };
+  };
+  request?: unknown;
+}
+
 const RegisterSchool = () => {
   const [activeTab, setActiveTab] = useState<"escola" | "turma">("escola");
   const [loading, setLoading] = useState(false);
@@ -66,8 +76,9 @@ const RegisterSchool = () => {
       setSchoolPhone("");
       setSchoolEmail("");
       loadEscolas(); // Reload schools list
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.detail || "Erro ao cadastrar escola";
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError;
+      const errorMessage = axiosError.response?.data?.detail || "Erro ao cadastrar escola";
       toast.error(errorMessage);
       console.error("School creation error:", error);
     } finally {
@@ -103,8 +114,9 @@ const RegisterSchool = () => {
       setClassSeries("");
       setClassShift("");
       setSelectedEscola("");
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.detail || "Erro ao cadastrar turma";
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError;
+      const errorMessage = axiosError.response?.data?.detail || "Erro ao cadastrar turma";
       toast.error(errorMessage);
       console.error("Class creation error:", error);
     } finally {

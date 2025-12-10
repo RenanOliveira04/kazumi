@@ -8,6 +8,14 @@ import { Volume2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
+interface AxiosError {
+  response?: {
+    status: number;
+    data?: unknown;
+  };
+  request?: unknown;
+}
+
 const Login = () => {
   const navigate = useNavigate();
   const { user, signIn } = useAuth();
@@ -36,7 +44,7 @@ const Login = () => {
       await signIn(email, password);
       toast.success("Login realizado com sucesso!");
       navigate("/");
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error("E-mail ou senha incorretos");
       console.error("Login error:", error);
     } finally {

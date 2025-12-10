@@ -40,6 +40,36 @@ interface Contact {
   telefone?: string;
 }
 
+interface AxiosError {
+  response?: {
+    status: number;
+    data?: unknown;
+  };
+}
+
+interface ProfessorContact {
+  id: number;
+  user_id: number;
+  nome_completo: string;
+  email: string;
+  matricula: string;
+  formacao: string;
+}
+
+interface ResponsavelContact {
+  id: number;
+  user_id: number;
+  nome_completo: string;
+  email: string;
+  telefone?: string;
+  parentesco: string;
+  alunos: Array<{
+    id: number;
+    nome: string;
+    matricula: string;
+  }>;
+}
+
 const Messages = () => {
   const { user } = useAuth();
   const [newMessage, setNewMessage] = useState("");
@@ -97,9 +127,18 @@ const Messages = () => {
     try {
       const response = await escolasApi.list();
       setEscolas(response.data || []);
-    } catch (error) {
+      if ((response.data || []).length === 0) {
+        toast.info("Nenhuma escola encontrada");
+      }
+    } catch (error: unknown) {
       console.error("Error loading escolas:", error);
       setEscolas([]);
+      const axiosError = error as AxiosError;
+      if (axiosError?.response?.status === 403) {
+        toast.error("Você não tem permissão para acessar escolas");
+      } else {
+        toast.error("Erro ao carregar escolas");
+      }
     }
   };
 
@@ -107,9 +146,20 @@ const Messages = () => {
     try {
       const response = await escolasApi.getTurmas(escolaId);
       setTurmas(response.data || []);
-    } catch (error) {
+      if ((response.data || []).length === 0) {
+        toast.info("Nenhuma turma encontrada para esta escola");
+      }
+    } catch (error: unknown) {
       console.error("Error loading turmas:", error);
       setTurmas([]);
+      const axiosError = error as AxiosError;
+      if (axiosError?.response?.status === 404) {
+        toast.error("Escola não encontrada");
+      } else if (axiosError?.response?.status === 403) {
+        toast.error("Você não tem permissão para acessar turmas desta escola");
+      } else {
+        toast.error("Erro ao carregar turmas");
+      }
     }
   };
 
@@ -120,20 +170,33 @@ const Messages = () => {
         turmasApi.getResponsaveis(turmaId)
       ]);
 
-      const professores = (professoresRes.data || []).map((p: any) => ({
+      const professores = (professoresRes.data || []).map((p: ProfessorContact) => ({
         ...p,
         tipo: 'professor' as const
       }));
 
-      const responsaveis = (responsaveisRes.data || []).map((r: any) => ({
+      const responsaveis = (responsaveisRes.data || []).map((r: ResponsavelContact) => ({
         ...r,
         tipo: 'responsavel' as const
       }));
 
-      setContacts([...professores, ...responsaveis]);
-    } catch (error) {
+      const allContacts = [...professores, ...responsaveis];
+      setContacts(allContacts);
+      
+      if (allContacts.length === 0) {
+        toast.info("Nenhum contato encontrado para esta turma");
+      }
+    } catch (error: unknown) {
       console.error("Error loading contacts:", error);
       setContacts([]);
+      const axiosError = error as AxiosError;
+      if (axiosError?.response?.status === 404) {
+        toast.error("Turma não encontrada");
+      } else if (axiosError?.response?.status === 403) {
+        toast.error("Você não tem permissão para acessar contatos desta turma");
+      } else {
+        toast.error("Erro ao carregar contatos");
+      }
     }
   };
 
@@ -160,8 +223,14 @@ const Messages = () => {
       );
 
       setMessages(allMessages);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error loading messages:", error);
+      const axiosError = error as AxiosError;
+      if (axiosError?.response?.status === 403) {
+        toast.error("Você não tem permissão para acessar mensagens");
+      } else {
+        toast.error("Erro ao carregar mensagens");
+      }
     } finally {
       setLoading(false);
     }

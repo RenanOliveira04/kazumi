@@ -4,14 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Bell, MessageSquare, Calendar, BookOpen, TrendingUp, UserPlus, Building2, ClipboardList, Upload } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { notificacoesApi, mensagensApi, eventosApi, alunosApi } from "@/services/api";
+import { notificacoesApi, mensagensApi, eventosApi, alunosApi, type Aluno } from "@/services/api";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [nextEvent, setNextEvent] = useState<{ title: string; time: string } | null>(null);
-  const [students, setStudents] = useState<any[]>([]);
+  const [students, setStudents] = useState<Aluno[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -10,6 +10,16 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { atividadesApi, turmasApi, Turma } from "@/services/api";
 
+interface AxiosError {
+  response?: {
+    status: number;
+    data?: {
+      detail?: string;
+    };
+  };
+  request?: unknown;
+}
+
 const CreateActivity = () => {
   const [loading, setLoading] = useState(false);
   const [turmas, setTurmas] = useState<Turma[]>([]);
@@ -60,8 +70,9 @@ const CreateActivity = () => {
       setSubject("");
       setTargetClass("");
       setActivityType("");
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.detail || "Erro ao criar atividade";
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError;
+      const errorMessage = axiosError.response?.data?.detail || "Erro ao criar atividade";
       toast.error(errorMessage);
       console.error("Activity creation error:", error);
     } finally {

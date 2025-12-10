@@ -28,8 +28,15 @@ const StudentDetails = () => {
         try {
           const response = await alunosApi.get(parseInt(id));
           studentData = response.data;
-        } catch (error) {
-          console.log("Student not found");
+        } catch (error: any) {
+          console.error("Error loading student:", error);
+          if (error.response?.status === 404) {
+            toast.error("Aluno não encontrado");
+          } else if (error.response?.status === 403) {
+            toast.error("Você não tem permissão para acessar este aluno");
+          } else {
+            toast.error("Erro ao carregar dados do aluno");
+          }
           setLoading(false);
           return;
         }
@@ -42,8 +49,13 @@ const StudentDetails = () => {
             return;
           }
           studentData = response.data[0];
-        } catch (error) {
-          console.log("Unable to load students");
+        } catch (error: any) {
+          console.error("Error loading students list:", error);
+          if (error.response?.status === 403) {
+            toast.error("Você não tem permissão para acessar alunos");
+          } else {
+            toast.error("Erro ao carregar lista de alunos");
+          }
           setLoading(false);
           return;
         }
@@ -72,8 +84,9 @@ const StudentDetails = () => {
           setPei(null);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Unexpected error loading student data:", error);
+      toast.error("Erro inesperado ao carregar dados do aluno");
     } finally {
       setLoading(false);
     }

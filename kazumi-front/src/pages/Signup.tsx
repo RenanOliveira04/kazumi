@@ -9,6 +9,16 @@ import { toast } from "sonner";
 import api from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
 
+interface AxiosError {
+  response?: {
+    status: number;
+    data?: {
+      detail?: string;
+    };
+  };
+  request?: unknown;
+}
+
 import {
   Select,
   SelectContent,
@@ -77,9 +87,10 @@ const Signup = () => {
           navigate("/");
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Signup error:", error);
-      const errorMessage = error.response?.data?.detail || "Erro ao criar conta. Tente novamente.";
+      const axiosError = error as AxiosError;
+      const errorMessage = axiosError.response?.data?.detail || "Erro ao criar conta. Tente novamente.";
       toast.error(errorMessage);
     } finally {
       setLoading(false);

@@ -2,6 +2,14 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import api from "@/services/api";
 import { useNavigate } from "react-router-dom";
 
+interface AxiosError {
+  response?: {
+    status: number;
+    data?: unknown;
+  };
+  request?: unknown;
+}
+
 export interface User {
   id: number;
   email: string;
@@ -49,7 +57,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         try {
           const response = await api.get<User>("/api/users/me");
           setUser(response.data);
-        } catch (error) {
+        } catch (error: unknown) {
           console.error("Failed to load user", error);
           localStorage.removeItem("token");
         }
@@ -85,15 +93,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       
       console.log("User loaded:", userResponse.data);
       navigate("/");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Login failed:", error);
-      
-      if (error.response) {
-        console.error("Server error:", error.response.status, error.response.data);
-      } else if (error.request) {
+
+      const axiosError = error as AxiosError;
+      if (axiosError.response) {
+        console.error("Server error:", axiosError.response.status, axiosError.response.data);
+      } else if (axiosError.request) {
         console.error("No response from server. Check if backend is running.");
       }
-      
+
       throw error;
     }
   };

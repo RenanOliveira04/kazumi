@@ -73,6 +73,17 @@ export interface Aluno {
   };
 }
 
+export interface AlunoCreate {
+  user_id: number;
+  matricula: string;
+  data_nascimento?: string;
+  necessidades_especiais?: boolean;
+  descricao_necessidades?: string;
+  pei_ativo?: boolean;
+  responsavel_id?: number;
+  turma_id?: number;
+}
+
 export interface PEI {
   id: number;
   aluno_id: number;
@@ -122,7 +133,7 @@ export const notificacoesApi = {
 export const alunosApi = {
   list: () => api.get<Aluno[]>('/api/alunos'),
   get: (id: number) => api.get<Aluno>(`/api/alunos/${id}`),
-  create: (data: any) => api.post<Aluno>('/api/alunos', data),
+  create: (data: AlunoCreate) => api.post<Aluno>('/api/alunos', data),
 };
 
 export const peiApi = {

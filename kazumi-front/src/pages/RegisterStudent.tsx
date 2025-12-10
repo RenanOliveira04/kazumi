@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { UserPlus, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import api from "@/services/api";
+import api, { alunosApi } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
 
 const RegisterStudent = () => {
@@ -45,14 +45,44 @@ const RegisterStudent = () => {
         email: `aluno${matricula}@temp.com`, // Temporary email
         senha: `temp${matricula}123`, // Temporary password
         nome_completo: studentName,
+        tipo_usuario: "aluno",
       });
+
+      const userId = userResponse.data.id;
+
+      // Step 2: Create Aluno record
+      const alunoData: any = {
+        user_id: userId,
+        matricula: matricula,
+        necessidades_especiais: hasSpecialNeeds,
+        pei_ativo: false,
+      };
+
+      if (birthDate) {
+        alunoData.data_nascimento = birthDate;
+      }
+
+      if (hasSpecialNeeds && needsDescription) {
+        alunoData.descricao_necessidades = needsDescription;
+      }
+
+      await alunosApi.create(alunoData);
 
       toast.success("Aluno cadastrado com sucesso!");
       navigate("/");
     } catch (error: any) {
       console.error("Error registering student:", error);
       if (error.response?.status === 400) {
-        toast.error("Matrícula já cadastrada");
+        const errorMessage = error.response?.data?.detail || "Erro ao cadastrar aluno";
+        if (errorMessage.includes("Matrícula") || errorMessage.includes("matrícula")) {
+          toast.error("Matrícula já cadastrada");
+        } else if (errorMessage.includes("Email") || errorMessage.includes("email")) {
+          toast.error("Email já cadastrado. Tente com outra matrícula.");
+        } else {
+          toast.error(errorMessage);
+        }
+      } else if (error.response?.status === 404) {
+        toast.error("Erro ao criar registro do aluno. Verifique os dados e tente novamente.");
       } else {
         toast.error("Erro ao cadastrar aluno. Tente novamente.");
       }
