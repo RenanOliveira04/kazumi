@@ -188,6 +188,16 @@ async def create_professor(
     return db_professor
 
 
+@router.get("/professores", response_model=list[ProfessorResponse])
+async def list_professores(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(TipoUsuario.GESTOR)),
+):
+    """Lista todos os professores cadastrados"""
+    professores = db.query(Professor).all()
+    return professores
+
+
 @router.get("/professores/{professor_id}", response_model=ProfessorResponse)
 async def get_professor(
     professor_id: int,

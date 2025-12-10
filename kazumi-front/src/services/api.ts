@@ -153,6 +153,7 @@ export interface Turma {
   sala?: string;
   vagas?: number;
   criado_em: string;
+  escola?: Escola;
 }
 
 export interface TurmaCreate {
@@ -178,6 +179,25 @@ export const turmasApi = {
   removeProfessor: (turmaId: number, professorId: number) => api.delete(`/api/turmas/${turmaId}/professores/${professorId}`),
   getResponsaveis: (id: number) => api.get(`/api/turmas/${id}/responsaveis`),
 };
+
+// Professores (Teachers)
+export const professoresApi = {
+  list: () => api.get<Professor[]>('/api/users/professores'),
+  get: (id: number) => api.get<Professor>(`/api/users/professores/${id}`),
+};
+
+// Professores (Teachers)
+export interface Professor {
+  id: number;
+  user_id: number;
+  matricula: string;
+  formacao?: string;
+  especializacao?: string;
+  user?: {
+    nome_completo: string;
+    email: string;
+  };
+}
 
 // Atividades (Activities)
 export interface Atividade {
@@ -241,5 +261,47 @@ export const escolasApi = {
   getTurmas: (id: number) => api.get<Turma[]>(`/api/escolas/${id}/turmas`),
 };
 
+
+// Relatórios (Reports)
+export interface RelatorioEngajamento {
+  periodo_dias: number;
+  usuarios_ativos: number;
+  total_usuarios: number;
+  taxa_ativacao: number;
+  total_acoes: number;
+  mensagens_enviadas: number;
+  eventos_criados: number;
+}
+
+export interface RelatorioDesempenho {
+  turma_id: number;
+  turma_nome: string;
+  total_alunos: number;
+  alunos_com_pei: number;
+  taxa_entrega_atividades: number;
+  media_geral: number;
+  frequencia_media: number;
+}
+
+export interface RelatorioPEI {
+  total_alunos_pei: number;
+  alunos_por_serie: Array<{
+    serie: string;
+    quantidade: number;
+  }>;
+  tipos_necessidades: Array<{
+    tipo: string;
+    quantidade: number;
+  }>;
+  progresso_medio: number;
+}
+
+export const relatoriosApi = {
+  getEngajamentoGeral: (dias?: number, escolaId?: number) => api.get<RelatorioEngajamento>('/api/relatorios/engajamento-geral', { params: { dias, escola_id: escolaId } }),
+  getDesempenhoAlunos: (escolaId?: number, turmaId?: number) => api.get<RelatorioDesempenho[]>('/api/relatorios/desempenho-alunos', { params: { escola_id: escolaId, turma_id: turmaId } }),
+  getComunicacaoStats: (dias?: number) => api.get('/api/relatorios/comunicacao', { params: { dias } }),
+  getAtividadesConclusao: (dias?: number, turmaId?: number) => api.get('/api/relatorios/atividades/conclusao', { params: { dias, turma_id: turmaId } }),
+  getPEIAcompanhamento: (escolaId?: number) => api.get<RelatorioPEI>('/api/relatorios/pei/acompanhamento', { params: { escola_id: escolaId } }),
+};
 
 export default api;

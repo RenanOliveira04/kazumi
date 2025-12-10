@@ -5,10 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Building2, School, Users, Plus, ArrowLeft } from "lucide-react";
+import { Building2, School, Users, Plus, ArrowLeft, GraduationCap, UserCheck, UserX } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { turmasApi, escolasApi, type Escola } from "@/services/api";
+import { turmasApi, escolasApi, professoresApi, type Escola, type Turma, type Professor } from "@/services/api";
 
 interface AxiosError {
   response?: {
@@ -21,9 +21,11 @@ interface AxiosError {
 }
 
 const RegisterSchool = () => {
-  const [activeTab, setActiveTab] = useState<"escola" | "turma">("escola");
+  const [activeTab, setActiveTab] = useState<"escola" | "turma" | "professores">("escola");
   const [loading, setLoading] = useState(false);
   const [escolas, setEscolas] = useState<Escola[]>([]);
+  const [turmas, setTurmas] = useState<Turma[]>([]);
+  const [professores, setProfessores] = useState<Professor[]>([]);
 
   // School form state
   const [schoolName, setSchoolName] = useState("");
@@ -38,8 +40,15 @@ const RegisterSchool = () => {
   const [classShift, setClassShift] = useState("");
   const [classYear, setClassYear] = useState(new Date().getFullYear().toString());
 
+  // Professors management state
+  const [selectedTurma, setSelectedTurma] = useState("");
+  const [selectedProfessor, setSelectedProfessor] = useState("");
+  const [turmaProfessores, setTurmaProfessores] = useState<Professor[]>([]);
+
   useEffect(() => {
     loadEscolas();
+    loadTurmas();
+    loadProfessores();
   }, []);
 
   const loadEscolas = async () => {
@@ -49,6 +58,36 @@ const RegisterSchool = () => {
     } catch (error) {
       console.error("Error loading escolas:", error);
       setEscolas([]);
+    }
+  };
+
+  const loadTurmas = async () => {
+    try {
+      const response = await turmasApi.list();
+      setTurmas(response.data || []);
+    } catch (error) {
+      console.error("Error loading turmas:", error);
+      setTurmas([]);
+    }
+  };
+
+  const loadProfessores = async () => {
+    try {
+      const response = await professoresApi.list();
+      setProfessores(response.data || []);
+    } catch (error) {
+      console.error("Error loading professores:", error);
+      setProfessores([]);
+    }
+  };
+
+  const loadTurmaProfessores = async (turmaId: string) => {
+    try {
+      const response = await turmasApi.getProfessores(parseInt(turmaId));
+      setTurmaProfessores(response.data || []);
+    } catch (error) {
+      console.error("Error loading turma professores:", error);
+      setTurmaProfessores([]);
     }
   };
 
@@ -124,6 +163,52 @@ const RegisterSchool = () => {
     }
   };
 
+  const handleAddProfessor = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!selectedTurma || !selectedProfessor) {
+      toast.error("Por favor, selecione uma turma e um professor");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await turmasApi.addProfessor(parseInt(selectedTurma), parseInt(selectedProfessor));
+      toast.success("Professor adicionado à turma com sucesso!");
+      setSelectedProfessor("");
+      loadTurmaProfessores(selectedTurma);
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError;
+      const errorMessage = axiosError.response?.data?.detail || "Erro ao adicionar professor";
+      toast.error(errorMessage);
+      console.error("Add professor error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveProfessor = async (turmaId: number, professorId: number) => {
+    if (!confirm("Tem certeza que deseja remover este professor da turma?")) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await turmasApi.removeProfessor(turmaId, professorId);
+      toast.success("Professor removido da turma com sucesso!");
+      loadTurmaProfessores(selectedTurma);
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError;
+      const errorMessage = axiosError.response?.data?.detail || "Erro ao remover professor";
+      toast.error(errorMessage);
+      console.error("Remove professor error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -166,6 +251,19 @@ const RegisterSchool = () => {
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Cadastrar Turma
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab("professores")}
+            className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+              activeTab === "professores"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <GraduationCap className="h-4 w-4" />
+              Gerenciar Professores
             </div>
           </button>
         </div>
@@ -344,12 +442,148 @@ const RegisterSchool = () => {
           </Card>
         )}
 
+        {/* Professors Management Tab */}
+        {activeTab === "professores" && (
+          <div className="space-y-6">
+            {/* Add Professor Form */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <UserCheck className="h-5 w-5" />
+                  Adicionar Professor à Turma
+                </CardTitle>
+                <CardDescription>
+                  Associe professores cadastrados às turmas existentes
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleAddProfessor} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="selectedTurma">Turma *</Label>
+                      <Select
+                        value={selectedTurma}
+                        onValueChange={(value) => {
+                          setSelectedTurma(value);
+                          loadTurmaProfessores(value);
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a turma" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {turmas.length === 0 ? (
+                            <SelectItem value="_none" disabled>
+                              Nenhuma turma cadastrada
+                            </SelectItem>
+                          ) : (
+                            turmas.map((turma) => (
+                              <SelectItem key={turma.id} value={turma.id.toString()}>
+                                {turma.nome} - {turma.escola?.nome || 'Escola não definida'}
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="selectedProfessor">Professor *</Label>
+                      <Select value={selectedProfessor} onValueChange={setSelectedProfessor}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o professor" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {professores.length === 0 ? (
+                            <SelectItem value="_none" disabled>
+                              Nenhum professor cadastrado
+                            </SelectItem>
+                          ) : (
+                            professores.map((professor) => (
+                              <SelectItem key={professor.id} value={professor.id.toString()}>
+                                {professor.user?.nome_completo || `Professor ${professor.id}`} - {professor.matricula}
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                    <Plus className="mr-2 h-5 w-5" />
+                    {loading ? "Adicionando..." : "Adicionar Professor à Turma"}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            {/* Current Professors List */}
+            {selectedTurma && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <GraduationCap className="h-5 w-5" />
+                    Professores da Turma
+                  </CardTitle>
+                  <CardDescription>
+                    Professores atualmente associados a esta turma
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {turmaProfessores.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <GraduationCap className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p className="font-medium">Nenhum professor associado</p>
+                      <p className="text-sm mt-1">Adicione professores usando o formulário acima</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {turmaProfessores.map((professor) => (
+                        <div
+                          key={professor.id}
+                          className="flex items-center justify-between p-4 border rounded-lg"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                              <GraduationCap className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-medium">
+                                {professor.user?.nome_completo || `Professor ${professor.id}`}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Matrícula: {professor.matricula}
+                                {professor.formacao && ` • ${professor.formacao}`}
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleRemoveProfessor(parseInt(selectedTurma), professor.id)}
+                            disabled={loading}
+                          >
+                            <UserX className="h-4 w-4 mr-2" />
+                            Remover
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+
         {/* Info Card */}
         <Card className="bg-muted/50">
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground">
-              💡 <strong>Dica:</strong> Após cadastrar escolas e turmas, você poderá associar alunos, 
-              professores e criar atividades específicas para cada turma.
+              💡 <strong>Dica:</strong> Após cadastrar escolas e turmas, você poderá associar professores às turmas,
+              gerenciar alunos e criar atividades específicas. Professores terão acesso para dar notas,
+              acompanhar engajamento e conversar com responsáveis.
             </p>
           </CardContent>
         </Card>

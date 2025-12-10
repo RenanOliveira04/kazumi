@@ -11,21 +11,23 @@ router = APIRouter(prefix="/api/relatorios", tags=["Relatórios"])
 @router.get("/engajamento-geral")
 async def get_engajamento_geral(
     dias: int = 30,
+    escola_id: int = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role(TipoUsuario.GESTOR))
 ):
     """Retorna métricas gerais de uso do sistema"""
-    return ReportsService.get_engajamento_geral(db, dias)
+    return ReportsService.get_engajamento_geral(db, dias, escola_id)
 
 
 @router.get("/desempenho-alunos")
 async def get_desempenho_alunos(
+    escola_id: int = None,
     turma_id: int = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role(TipoUsuario.GESTOR, TipoUsuario.PROFESSOR))
 ):
     """Retorna análise de desempenho por turma/aluno"""
-    return ReportsService.get_desempenho_alunos(db, turma_id)
+    return ReportsService.get_desempenho_alunos(db, escola_id, turma_id)
 
 
 @router.get("/comunicacao")
@@ -61,9 +63,10 @@ async def get_atividades_conclusao(
 
 @router.get("/pei/acompanhamento")
 async def get_pei_acompanhamento(
+    escola_id: int = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role(TipoUsuario.GESTOR, TipoUsuario.PROFESSOR))
 ):
     """Retorna progresso dos alunos com PEI"""
-    return ReportsService.get_pei_acompanhamento(db)
+    return ReportsService.get_pei_acompanhamento(db, escola_id)
 
