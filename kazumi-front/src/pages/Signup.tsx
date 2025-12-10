@@ -80,9 +80,9 @@ const Signup = () => {
         // Auto login after signup
         await signIn(email, password);
         
-        // Navigate based on user type - corrected route
+        // Navigate based on user type
         if (userType === "gestor") {
-          navigate("/register-school");
+          navigate("/cadastrar-escola");
         } else {
           navigate("/");
         }

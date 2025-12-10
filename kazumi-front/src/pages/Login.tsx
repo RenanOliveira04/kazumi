@@ -74,7 +74,7 @@ const Login = () => {
           </div>
           <CardTitle className="text-2xl">Bem-vindo!</CardTitle>
           <CardDescription className="text-base">
-            Entre com seu e-mail e PIN para acessar
+            Entre com seu e-mail e Senha para acessar
           </CardDescription>
           
           <Button
