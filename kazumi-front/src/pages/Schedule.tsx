@@ -2,7 +2,12 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, Clock, MapPin } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar as CalendarIcon, Clock, MapPin, Plus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +23,18 @@ const Schedule = () => {
   const [filter, setFilter] = useState<"todos" | "reuniao" | "festa" | "apresentacao" | "palestra" | "excursao" | "outro">("todos");
   const [events, setEvents] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Form states
+  const [titulo, setTitulo] = useState("");
+  const [descricao, setDescricao] = useState("");
+  const [tipo, setTipo] = useState<"reuniao" | "festa" | "apresentacao" | "palestra" | "excursao" | "outro">("reuniao");
+  const [dataEvento, setDataEvento] = useState("");
+  const [horaInicio, setHoraInicio] = useState("");
+  const [horaFim, setHoraFim] = useState("");
+  const [local, setLocal] = useState("");
+  const [requerConfirmacao, setRequerConfirmacao] = useState(false);
 
   useEffect(() => {
     loadEvents();
@@ -38,6 +55,52 @@ const Schedule = () => {
   const filteredEvents = filter === "todos" 
     ? events 
     : events.filter(event => event.tipo === filter);
+
+  const handleCreateEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!titulo || !descricao || !dataEvento) {
+      toast.error("Por favor, preencha todos os campos obrigatórios");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      await eventosApi.create({
+        titulo,
+        descricao,
+        tipo,
+        data_evento: dataEvento,
+        hora_inicio: horaInicio || undefined,
+        hora_fim: horaFim || undefined,
+        local: local || undefined,
+        requer_confirmacao: requerConfirmacao ? 1 : 0,
+        publico_alvo: undefined,
+      });
+
+      toast.success("Evento criado com sucesso!");
+      setCreateDialogOpen(false);
+      resetForm();
+      loadEvents();
+    } catch (error: unknown) {
+      console.error("Error creating event:", error);
+      toast.error("Erro ao criar evento");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const resetForm = () => {
+    setTitulo("");
+    setDescricao("");
+    setTipo("reuniao");
+    setDataEvento("");
+    setHoraInicio("");
+    setHoraFim("");
+    setLocal("");
+    setRequerConfirmacao(false);
+  };
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -65,13 +128,21 @@ const Schedule = () => {
       {/* Header */}
       <header className="bg-card border-b border-border p-4 md:p-6">
         <div className="max-w-screen-lg mx-auto">
-          <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-            <CalendarIcon className="h-8 w-8 text-primary" />
-            Agenda Escolar
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Acompanhe compromissos e eventos
-          </p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+                <CalendarIcon className="h-8 w-8 text-primary" />
+                Agenda Escolar
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                Acompanhe compromissos e eventos
+              </p>
+            </div>
+            <Button onClick={() => setCreateDialogOpen(true)} size="lg">
+              <Plus className="mr-2 h-5 w-5" />
+              Criar Evento
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -196,6 +267,132 @@ const Schedule = () => {
               </div>
             </DialogDescription>
           </DialogHeader>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Event Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Criar Novo Evento</DialogTitle>
+            <DialogDescription>
+              Preencha as informações do evento escolar
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreateEvent} className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="titulo">Título *</Label>
+              <Input
+                id="titulo"
+                value={titulo}
+                onChange={(e) => setTitulo(e.target.value)}
+                placeholder="Ex: Reunião de Pais e Mestres"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="descricao">Descrição *</Label>
+              <Textarea
+                id="descricao"
+                value={descricao}
+                onChange={(e) => setDescricao(e.target.value)}
+                placeholder="Descreva os detalhes do evento"
+                rows={3}
+                required
+              />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="tipo">Tipo de Evento *</Label>
+                <Select value={tipo} onValueChange={(value: any) => setTipo(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="reuniao">Reunião</SelectItem>
+                    <SelectItem value="festa">Festa</SelectItem>
+                    <SelectItem value="apresentacao">Apresentação</SelectItem>
+                    <SelectItem value="palestra">Palestra</SelectItem>
+                    <SelectItem value="excursao">Excursão</SelectItem>
+                    <SelectItem value="outro">Outro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="dataEvento">Data do Evento *</Label>
+                <Input
+                  id="dataEvento"
+                  type="date"
+                  value={dataEvento}
+                  onChange={(e) => setDataEvento(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="horaInicio">Hora de Início</Label>
+                <Input
+                  id="horaInicio"
+                  type="time"
+                  value={horaInicio}
+                  onChange={(e) => setHoraInicio(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="horaFim">Hora de Término</Label>
+                <Input
+                  id="horaFim"
+                  type="time"
+                  value={horaFim}
+                  onChange={(e) => setHoraFim(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="local">Local</Label>
+              <Input
+                id="local"
+                value={local}
+                onChange={(e) => setLocal(e.target.value)}
+                placeholder="Ex: Auditório Principal"
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="requerConfirmacao"
+                checked={requerConfirmacao}
+                onCheckedChange={(checked) => setRequerConfirmacao(checked as boolean)}
+              />
+              <Label htmlFor="requerConfirmacao" className="cursor-pointer">
+                Requer confirmação de presença
+              </Label>
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setCreateDialogOpen(false);
+                  resetForm();
+                }}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={submitting} className="flex-1">
+                {submitting ? "Criando..." : "Criar Evento"}
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
