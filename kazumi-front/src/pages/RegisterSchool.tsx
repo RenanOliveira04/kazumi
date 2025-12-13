@@ -5,10 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Building2, School, Users, Plus, ArrowLeft, GraduationCap, UserCheck, UserX } from "lucide-react";
+import { Building2, School, Users, Plus, ArrowLeft, GraduationCap, UserCheck, UserX, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { turmasApi, escolasApi, professoresApi, type Escola, type Turma, type Professor } from "@/services/api";
+import { turmasApi, escolasApi, professoresApi, alunosApi, type Escola, type Turma, type Professor, type Aluno } from "@/services/api";
 
 interface AxiosError {
   response?: {
@@ -21,7 +21,7 @@ interface AxiosError {
 }
 
 const RegisterSchool = () => {
-  const [activeTab, setActiveTab] = useState<"escola" | "turma" | "professores">("escola");
+  const [activeTab, setActiveTab] = useState<"escola" | "turma" | "professores" | "alunos">("escola");
   const [loading, setLoading] = useState(false);
   const [escolas, setEscolas] = useState<Escola[]>([]);
   const [turmas, setTurmas] = useState<Turma[]>([]);
@@ -45,11 +45,30 @@ const RegisterSchool = () => {
   const [selectedProfessor, setSelectedProfessor] = useState("");
   const [turmaProfessores, setTurmaProfessores] = useState<Professor[]>([]);
 
+  // Student management state
+  const [alunos, setAlunos] = useState<Aluno[]>([]);
+  const [selectedAluno, setSelectedAluno] = useState("");
+  const [selectedTurmaForAluno, setSelectedTurmaForAluno] = useState("");
+  const [turmaAlunos, setTurmaAlunos] = useState<Aluno[]>([]);
+
   useEffect(() => {
     loadEscolas();
     loadTurmas();
     loadProfessores();
   }, []);
+
+  // Reload data when switching tabs to ensure fresh data
+  useEffect(() => {
+    if (activeTab === 'turma') {
+      loadEscolas(); // Refresh schools list when viewing turma tab
+    } else if (activeTab === 'professores') {
+      loadTurmas(); // Refresh turmas list when viewing professores tab
+      loadProfessores(); // Refresh professores list
+    } else if (activeTab === 'alunos') {
+      loadAlunos(); // Refresh alunos list for student management
+      loadTurmas(); // Refresh turmas list for assignment
+    }
+  }, [activeTab]);
 
   const loadEscolas = async () => {
     try {
@@ -88,6 +107,26 @@ const RegisterSchool = () => {
     } catch (error) {
       console.error("Error loading turma professores:", error);
       setTurmaProfessores([]);
+    }
+  };
+
+  const loadAlunos = async () => {
+    try {
+      const response = await alunosApi.list();
+      setAlunos(response.data || []);
+    } catch (error) {
+      console.error("Error loading alunos:", error);
+      setAlunos([]);
+    }
+  };
+
+  const loadTurmaAlunos = async (turmaId: string) => {
+    try {
+      const response = await turmasApi.getAlunos(parseInt(turmaId));
+      setTurmaAlunos(response.data || []);
+    } catch (error) {
+      console.error("Error loading turma alunos:", error);
+      setTurmaAlunos([]);
     }
   };
 
@@ -209,6 +248,57 @@ const RegisterSchool = () => {
     }
   };
 
+  const handleAssignAluno = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!selectedAluno || !selectedTurmaForAluno) {
+      toast.error("Por favor, selecione um aluno e uma turma");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await alunosApi.update(parseInt(selectedAluno), { turma_id: parseInt(selectedTurmaForAluno) });
+      toast.success("Aluno adicionado à turma com sucesso!");
+      setSelectedAluno("");
+      setSelectedTurmaForAluno("");
+      loadAlunos(); // Refresh list
+      if (selectedTurmaForAluno) {
+        loadTurmaAlunos(selectedTurmaForAluno);
+      }
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError;
+      const errorMessage = axiosError.response?.data?.detail || "Erro ao adicionar aluno à turma";
+      toast.error(errorMessage);
+      console.error("Assign aluno error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveAluno = async (alunoId: number, turmaId: string) => {
+    if (!confirm("Tem certeza que deseja remover este aluno da turma?")) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await alunosApi.update(alunoId, { turma_id: null });
+      toast.success("Aluno removido da turma com sucesso!");
+      loadTurmaAlunos(turmaId);
+      loadAlunos(); // Refresh unassigned list
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError;
+      const errorMessage = axiosError.response?.data?.detail || "Erro ao remover aluno da turma";
+      toast.error(errorMessage);
+      console.error("Remove aluno error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -264,6 +354,19 @@ const RegisterSchool = () => {
             <div className="flex items-center gap-2">
               <GraduationCap className="h-4 w-4" />
               Gerenciar Professores
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab("alunos")}
+            className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+              activeTab === "alunos"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <UserPlus className="h-4 w-4" />
+              Gerenciar Alunos
             </div>
           </button>
         </div>
@@ -574,6 +677,169 @@ const RegisterSchool = () => {
                 </CardContent>
               </Card>
             )}
+          </div>
+        )}
+
+        {/* Student Management Tab */}
+        {activeTab === "alunos" && (
+          <div className="space-y-6">
+            {/* Assign Student Form */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <UserPlus className="h-5 w-5" />
+                  Adicionar Aluno à Turma
+                </CardTitle>
+                <CardDescription>
+                  Atribua alunos cadastrados às suas respectivas turmas
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleAssignAluno} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="selectedAluno">Aluno *</Label>
+                      <Select value={selectedAluno} onValueChange={setSelectedAluno}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o aluno" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {alunos.filter(a => !a.turma_id).length === 0 ? (
+                            <SelectItem value="_none" disabled>
+                              Nenhum aluno sem turma
+                            </SelectItem>
+                          ) : (
+                            alunos
+                              .filter(a => !a.turma_id)
+                              .map((aluno) => (
+                                <SelectItem key={aluno.id} value={aluno.id.toString()}>
+                                  {aluno.user?.nome_completo || `Aluno ${aluno.id}`} - {aluno.matricula}
+                                </SelectItem>
+                              ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="selectedTurmaForAluno">Turma *</Label>
+                      <Select value={selectedTurmaForAluno} onValueChange={setSelectedTurmaForAluno}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a turma" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {turmas.length === 0 ? (
+                            <SelectItem value="_none" disabled>
+                              Nenhuma turma cadastrada
+                            </SelectItem>
+                          ) : (
+                            turmas.map((turma) => (
+                              <SelectItem key={turma.id} value={turma.id.toString()}>
+                                {turma.nome} - {turma.escola?.nome || 'Escola não definida'}
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                    <Plus className="mr-2 h-5 w-5" />
+                    {loading ? "Adicionando..." : "Adicionar Aluno à Turma"}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            {/* View Students by Class */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Alunos por Turma
+                </CardTitle>
+                <CardDescription>
+                  Visualize e gerencie alunos de cada turma
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="viewTurma">Selecione uma Turma</Label>
+                    <Select
+                      value={selectedTurmaForAluno}
+                      onValueChange={(value) => {
+                        setSelectedTurmaForAluno(value);
+                        loadTurmaAlunos(value);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a turma" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {turmas.length === 0 ? (
+                          <SelectItem value="_none" disabled>
+                            Nenhuma turma cadastrada
+                          </SelectItem>
+                        ) : (
+                          turmas.map((turma) => (
+                            <SelectItem key={turma.id} value={turma.id.toString()}>
+                              {turma.nome} - {turma.serie}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {selectedTurmaForAluno && (
+                    <div className="mt-6">
+                      {turmaAlunos.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p className="font-medium">Nenhum aluno nesta turma</p>
+                          <p className="text-sm mt-1">Adicione alunos usando o formulário acima</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {turmaAlunos.map((aluno) => (
+                            <div
+                              key={aluno.id}
+                              className="flex items-center justify-between p-4 border rounded-lg"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                                  <UserCheck className="h-5 w-5 text-primary" />
+                                </div>
+                                <div>
+                                  <p className="font-medium">
+                                    {aluno.user?.nome_completo || `Aluno ${aluno.id}`}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    Matrícula: {aluno.matricula}
+                                    {aluno.necessidades_especiais && " • PcD"}
+                                  </p>
+                                </div>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRemoveAluno(aluno.id, selectedTurmaForAluno)}
+                                disabled={loading}
+                              >
+                                <UserX className="h-4 w-4 mr-2" />
+                                Remover
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
 

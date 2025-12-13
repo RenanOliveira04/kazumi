@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Home, MessageSquare, Calendar, BookOpen, User } from "lucide-react";
+import { Home, MessageSquare, Calendar, BookOpen, User, GraduationCap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Layout = () => {
@@ -11,15 +11,20 @@ const Layout = () => {
     { path: "/mensagens", icon: MessageSquare, label: "Mensagens" },
     { path: "/agenda", icon: Calendar, label: "Agenda" },
     { path: "/conteudos", icon: BookOpen, label: "Conteúdos" },
+    { path: "/minhas-turmas", icon: GraduationCap, label: "Minhas Turmas" },
     { path: "/aluno", icon: User, label: "Aluno" },
     { path: "/perfil", icon: User, label: "Perfil" },
   ];
 
   // Filter navigation items based on user role
   // Only responsaveis should see the "Aluno" tab
+  // Only professors should see "Minhas Turmas"
   const navItems = allNavItems.filter(item => {
     if (item.path === "/aluno") {
       return user?.tipo_usuario === "responsavel";
+    }
+    if (item.path === "/minhas-turmas") {
+      return user?.tipo_usuario === "professor";
     }
     return true;
   });

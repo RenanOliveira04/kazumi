@@ -193,7 +193,9 @@ async def list_professores(
     ),
 ):
     """Lista todos os professores cadastrados"""
-    professores = db.query(Professor).all()
+    from sqlalchemy.orm import joinedload
+
+    professores = db.query(Professor).options(joinedload(Professor.user)).all()
     return professores
 
 
@@ -204,7 +206,14 @@ async def get_professor(
     current_user: User = Depends(get_current_active_user),
 ):
     """Retorna os detalhes de um professor"""
-    professor = db.query(Professor).filter(Professor.id == professor_id).first()
+    from sqlalchemy.orm import joinedload
+
+    professor = (
+        db.query(Professor)
+        .options(joinedload(Professor.user))
+        .filter(Professor.id == professor_id)
+        .first()
+    )
     if not professor:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Professor não encontrado"

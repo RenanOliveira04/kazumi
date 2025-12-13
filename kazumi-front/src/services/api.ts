@@ -60,9 +60,10 @@ export interface Aluno {
   user_id: number;
   matricula: string;
   data_nascimento?: string;
-  necessidades_especiais: boolean;
+  necessidades_especiais:  boolean;
   descricao_necessidades?: string;
   pei_ativo: boolean;
+  turma_id?: number | null;
   user?: {
     nome_completo: string;
     email: string;
@@ -134,6 +135,7 @@ export const alunosApi = {
   list: () => api.get<Aluno[]>('/api/alunos'),
   get: (id: number) => api.get<Aluno>(`/api/alunos/${id}`),
   create: (data: AlunoCreate) => api.post<Aluno>('/api/alunos', data),
+  update: (id: number, data: Partial<AlunoCreate>) => api.put<Aluno>(`/api/alunos/${id}`, data),
 };
 
 export const peiApi = {

@@ -18,6 +18,7 @@ import RegisterStudent from "./pages/RegisterStudent";
 import RegisterSchool from "./pages/RegisterSchool";
 import CreateActivity from "./pages/CreateActivity";
 import Reports from "./pages/Reports";
+import ClassManagement from "./pages/ClassManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/cadastrar-escola" element={<RegisterSchool />} />
               <Route path="/criar-atividade" element={<CreateActivity />} />
               <Route path="/relatorios" element={<Reports />} />
+              <Route path="/minhas-turmas" element={<ClassManagement />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
