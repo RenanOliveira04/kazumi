@@ -1,73 +1,60 @@
-# Welcome to your Lovable project
+# Kazumi - Educação Inclusiva
 
-## Project info
+## Sobre o Projeto
 
-**URL**: https://lovable.dev/projects/70bc188b-4887-4b73-8bb7-26326e586bdf
+Kazumi é uma plataforma educacional acessível desenvolvida para facilitar a comunicação entre famílias de estudantes com necessidades especiais e escolas.
 
-## How can I edit this code?
+## Desenvolvimento Local
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/70bc188b-4887-4b73-8bb7-26326e586bdf) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Para rodar o projeto localmente:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+O servidor de desenvolvimento estará disponível em `http://localhost:5173`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Build para Produção
 
-**Use GitHub Codespaces**
+```sh
+npm run build
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Os arquivos otimizados estarão na pasta `dist/`
 
-## What technologies are used for this project?
+## Tecnologias Utilizadas
 
-This project is built with:
-
+- React + TypeScript
 - Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- TailwindCSS
+- Shadcn/ui
+- React Router
+- TanStack Query
+- Axios
 
-## How can I deploy this project?
+## Recursos de Acessibilidade
 
-Simply open [Lovable](https://lovable.dev/projects/70bc188b-4887-4b73-8bb7-26326e586bdf) and click on Share -> Publish.
+- Integração com VLibras para tradução automática para Libras
+- Design responsivo e acessível
+- Suporte a leitores de tela
+- Alto contraste e navegação por teclado
 
-## Can I connect a custom domain to my Lovable project?
+## Estrutura do Projeto
 
-Yes, you can!
+```
+src/
+├── components/     # Componentes reutilizáveis
+├── pages/         # Páginas da aplicação
+├── contexts/      # Contextos React (Auth, etc)
+├── services/      # Serviços de API
+└── lib/          # Utilitários e configurações
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## API Backend
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+O backend da aplicação está localizado no diretório `app/` na raiz do projeto.
+
+## Licença
+
+Propriedade da equipe Kazumi.
