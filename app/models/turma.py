@@ -24,7 +24,7 @@ class Turma(Base):
     capacidade = Column(Integer)
 
     # Relationships
-    escola = relationship("Escola", back_populates="turmas")
+    escola = relationship("Escola", back_populates="turmas", lazy="selectin")
     alunos = relationship("Aluno", back_populates="turma")
     professores = relationship(
         "Professor", secondary=professor_turma, back_populates="turmas"
