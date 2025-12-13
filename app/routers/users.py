@@ -10,13 +10,10 @@ from app.schemas import (
     AlunoUpdate,
     AlunoResponse,
     ProfessorCreate,
-    ProfessorUpdate,
     ProfessorResponse,
     ResponsavelCreate,
-    ResponsavelUpdate,
     ResponsavelResponse,
     GestorCreate,
-    GestorUpdate,
     GestorResponse,
 )
 from app.utils.dependencies import get_current_active_user, require_role
@@ -191,7 +188,9 @@ async def create_professor(
 @router.get("/professores", response_model=list[ProfessorResponse])
 async def list_professores(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role(TipoUsuario.GESTOR)),
+    current_user: User = Depends(
+        require_role(TipoUsuario.GESTOR, TipoUsuario.PROFESSOR)
+    ),
 ):
     """Lista todos os professores cadastrados"""
     professores = db.query(Professor).all()
